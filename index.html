@@ -8,17 +8,14 @@
 </head>
 <body>
 
-    <!-- Tactical Overlay Grid Background -->
     <div class="schematic-bg"></div>
 
-    <!-- Sidebar Navigation -->
     <nav class="sidebar">
         <div class="nav-header">
             <h2 class="glitch-header" data-text="TERRANA">TERRANA</h2>
             <span>CLASS C SCHEMATICS</span>
         </div>
         
-        <!-- INTERACTIVE SYSTEM DIAGNOSTICS TICKER -->
         <div class="system-diagnostics">
             <div class="diag-title">// CORE LIVE SYSTEM STATUS</div>
             <div class="diag-row"><span>REACTOR OUTPUT:</span> <span id="tick-reactor" class="tick-value">0</span>%</div>
@@ -34,12 +31,12 @@
             <li><a href="#credits">04. Engineering Modification Credits</a></li>
         </ul>
 
-       <!-- MASTER AUDIO TOGGLE INTERFACE & PAYMENT SCHEME -->
-	<div class="support-section" style="margin: 20px 0; text-align: center;">
-    	    <a href="https://paypal.me/aquasurfer" target="_blank" rel="noopener noreferrer" onclick="return true;" style="padding: 10px 20px; background-color: #0070ba; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-        Support this project via PayPal
-	    </a>
-	</div>
+        <div class="support-section" style="margin: 20px 0; text-align: center;">
+            <button onclick="window.open('https://paypal.me/aquasurfer', '_blank');" style="padding: 10px 20px; background-color: #0070ba; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-family: inherit;">
+                Support this project via PayPal
+            </button>
+        </div>
+
         <div class="sidebar-footer">
             <button id="audio-toggle" class="audio-btn fx-audio-toggle">
                 <span class="audio-icon">🔊</span> AUDIO: ENABLED
@@ -47,50 +44,44 @@
         </div>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="content">
 
-        <!-- SECTION 00: COVER PAGE -->
         <section id="cover" class="manual-section active-section">
             <div class="cover-wrapper">
                 <div class="cover-frame crt-effect">
                     <div class="cover-image-container">
                         <img src="assets/cover-render.png" alt="Terrana Out of Frame Render" class="hero-render">
-                        <!-- LOCALIZED PLASMA THRUSTER WAKE EMITTER LAYER -->
                         <div class="thruster-glow-matrix"></div>
                     </div>
                     <div class="cover-title">
                         <h1 class="glitch-title" data-text="TERRANA">TERRANA</h1>
                         <p class="subtitle">TACTICAL SHIP OPERATING MANUAL // DECK SCHEMATICS</p>
                         
-                        <!-- RE-MAPPED COPYRIGHT FOOTER ARCHIVE -->
                         <div class="cover-copyright-block" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; letter-spacing: 1px;">
                             <p>&copy; 2026 All Rights Reserved. // 22nd May 2026</p>
                             <p>Proprietary Blueprint Asset developed exclusively for</p>
-			                <p>AngelStarr Systems Core Network Operations.</p>
+                            <p>AngelStarr Systems Core Network Operations.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 01: VESSEL SPECIFICATIONS (PHOTO-REPLICATED UI SUITE) -->
         <section id="specs" class="manual-section">
             <h2>01. VESSEL SPECIFICATIONS</h2>
             
             <div class="starfield-ui-wrapper">
                 
-                <!-- LEFT COLUMN: DIAGNOSTIC TELEMETRY & SYSTEM BARS -->
                 <div class="ui-panel-left">
                     <div class="ship-systems-container">
                         <div class="ui-header-text">SHIP SYSTEMS</div>
                         
-                            <div class="systems-grid-row">
-                            	<div class="system-col" data-system="PAR">
-			    	<div class="bar-meter-track" data-bars="12"></div>
-			    	<div class="system-tag-box">PAR</div>
-			    	<span class="power-static" data-system="PAR">12</span>
-			    </div>
+                        <div class="systems-grid-row">
+                            <div class="system-col" data-system="PAR">
+                                <div class="bar-meter-track" data-bars="12"></div>
+                                <div class="system-tag-box">PAR</div>
+                                <span class="power-static" data-system="PAR">12</span>
+                            </div>
                             <div class="system-col" data-system="EM">
                                 <div class="bar-meter-track" data-bars="12"></div>
                                 <div class="system-tag-box">EM</div>
@@ -128,12 +119,10 @@
                     </div>
                 </div>
 
-                <!-- RIGHT COLUMN: OVERVIEW DECK MATRIX -->
                 <div class="ui-panel-right">
                     <div class="overview-header-accent">Ship Overview</div>
                     
                     <div class="overview-stats-body">
-                        <!-- STAT TRACKS WITH SLIDER OVERLAYS -->
                         <div class="stat-slider-row">
                             <div class="stat-labels"><span>FUEL</span><span>300</span></div>
                             <div class="slider-track-line data-full"></div>
@@ -150,7 +139,6 @@
 
                         <hr class="panel-inner-divider">
 
-                        <!-- INTERACTIVE GRID LAYOUT FOR CORE SPECS -->
                         <div class="telemetry-quad-mesh">
                             <div class="mesh-cell">
                                 <div class="cell-icon-wrap"><span class="icon-shape spec-c-box">C</span></div>
@@ -182,7 +170,6 @@
                             </div>
                         </div>
 
-                        <!-- WEAPON INTEGRATION DATA FOOTER -->
                         <div class="weapons-triple-row">
                             <div class="wpn-sub-cell"><div class="icon-circle-wpn"></div><div><span class="cell-lbl">PAR</span><span class="cell-val-small">103</span></div></div>
                             <div class="wpn-sub-cell"><div><span class="cell-lbl">EM</span><span class="cell-val-small">3</span></div></div>
@@ -193,7 +180,6 @@
 
                         <div class="registration-status-tag">REGISTERED</div>
 
-                        <!-- VALUATION METRIC DATA GRID -->
                         <div class="valuation-meta-row">
                             <div class="val-block"><span class="cell-lbl">VALUE</span><span class="cell-val-large">128919</span></div>
                             <div class="val-block"><span class="cell-lbl">MASS</span><span class="cell-val-large">1312</span></div>
@@ -203,7 +189,6 @@
 
             </div>
 
-            <!-- COMPONENT DATA SHEET DROPDOWNS -->
             <div class="grid-container specs-grid" style="margin-top: 40px;">
                 <div class="spec-card">
                     <h3>CHASSIS OVERRIDE PROFILE</h3>
@@ -230,7 +215,6 @@
             </div>
         </section>
 
-        <!-- SECTION 02: DECK BLUEPRINTS -->
         <section id="blueprints" class="manual-section">
             <h2>02. MASTER DECK BLUEPRINTS</h2>
             <div class="blueprint-container">
@@ -241,7 +225,7 @@
                 </div>
                 <div class="blueprint-viewer">
                     <div class="tab-controls">
-                        <button class="bp-tab active" onclick="switchBlueprint(1)">DECK 1</button>
+                        <button class="bp-tab" onclick="switchBlueprint(1)">DECK 1</button>
                         <button class="bp-tab" onclick="switchBlueprint(2)">DECK 2</button>
                         <button class="bp-tab" onclick="switchBlueprint(3)">DECK 3</button>
                         <button class="bp-tab" onclick="switchBlueprint(4)">DECK 4</button>
@@ -254,7 +238,6 @@
             </div>
         </section>
 
-        <!-- SECTION 03: STRUCTURAL BREAKDOWN -->
         <section id="breakdown" class="manual-section">
             <h2>03. MULTI-LEVEL STRUCTURAL BREAKDOWN</h2>
             <div class="breakdown-container">
@@ -278,12 +261,10 @@
             </div>
         </section>
 
-        <!-- SECTION 04: MODIFICATION CREDITS -->
         <section id="credits" class="manual-section">
             <h2>04. ENGINEERING MODIFICATION CREDITS</h2>
             
             <div class="grid-container integration-grid">
-                <!-- MASTER MOD MANIFEST ARCHIVE -->
                 <div class="credits-card main-manifest">
                     <h3>INTEGRATED ARCHITECTURAL PACKAGES</h3>
                     <div class="manifest-container">
@@ -347,7 +328,6 @@
                             <a href="https://creations.bethesda.net/en/starfield/details/6cbf2c64-b736-4d95-bf06-38183a94b359/Falkland_Systems_Ship_Services" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
                         </div>
 
-                        <!-- EXPLICIT TELEMETRY MAINTENANCE DISCLAIMER (RELOCATED UNDER FALKLAND MODULE) -->
                         <div class="telemetry-disclaimer" style="margin-top: 15px; margin-bottom: 0;">
                             <strong>// WARNING: REPOSITORY AVAILABILITY PROFILE</strong>
                             <p>Engineering modules can disappear, undergo structural replacement, or be completely removed/updated by their authors. If a direct telemetry target profile returns an interface failure, check the primary Bethesda Creations site immediately and search via a similar asset name to track down and deploy the latest revisions.</p>
@@ -356,10 +336,8 @@
                     </div>
                 </div>
 
-                <!-- CORE OVERRIDES AND MANIPULATION STACKS -->
                 <div class="credits-side-panel">
                     
-                    <!-- UTILITY CRITICAL MATRIX -->
                     <div class="credits-card utility-card">
                         <h3>CORE ENGINE OVERRIDES</h3>
                         <div class="manifest-entry-compact">
@@ -374,7 +352,6 @@
                         </div>
                     </div>
 
-                    <!-- DOOR CONFIGURATION MATRIX -->
                     <div class="credits-card utility-card">
                         <h3>INTERNAL ROUTING MANAGEMENT</h3>
                         <div class="manifest-entry-compact">
@@ -384,7 +361,6 @@
                         </div>
                     </div>
 
-                    <!-- MASS MANIPULATION CHASSIS UTILITIES -->
                     <div class="credits-card utility-card">
                         <h3>CHASSIS TACTICAL MANIPULATION</h3>
                         <div class="manipulation-block">
@@ -408,7 +384,6 @@
 
     </main>
 
-    <!-- Global Technical Schematic Magnification Lightbox Overlay -->
     <div id="lightbox-overlay" class="lightbox-overlay">
         <span class="lightbox-close">&times;</span>
         <img class="lightbox-display" id="lightbox-display" src="" alt="Enlarged Projection Matrix">
