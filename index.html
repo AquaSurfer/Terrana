@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERRANA - Class C Technical Manual</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Tactical Overlay Grid Background -->
+    <div class="schematic-bg"></div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="nav-header">
+            <h2 class="glitch-header" data-text="TERRANA">TERRANA</h2>
+            <span>CLASS C SCHEMATICS</span>
+        </div>
+        
+        <!-- INTERACTIVE SYSTEM DIAGNOSTICS TICKER -->
+        <div class="system-diagnostics">
+            <div class="diag-title">// CORE LIVE SYSTEM STATUS</div>
+            <div class="diag-row"><span>REACTOR OUTPUT:</span> <span id="tick-reactor" class="tick-value">0</span>%</div>
+            <div class="diag-row"><span>SHIELD CAPACITY:</span> <span id="tick-shields" class="tick-value">0</span> MW</div>
+            <div class="diag-row"><span>SYS INTERFACE:</span> <span class="cyan-text">ONLINE</span></div>
+        </div>
+
+        <ul>
+            <li><a href="#cover" class="active">00. Technical Archive</a></li>
+            <li><a href="#specs">01. Vessel Specifications</a></li>
+            <li><a href="#blueprints">02. Deck Blueprints</a></li>
+            <li><a href="#breakdown">03. Structural Breakdown</a></li>
+            <li><a href="#credits">04. Engineering Modification Credits</a></li>
+        </ul>
+
+        <!-- MASTER AUDIO TOGGLE INTERFACE & DOWNLOAD SCHEME PAYLOAD -->
+        <div class="sidebar-footer">
+            <button id="audio-toggle" class="audio-btn fx-audio-toggle">
+                <span class="audio-icon">🔊</span> AUDIO: ENABLED
+            </button>            
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="content">
+
+        <!-- SECTION 00: COVER PAGE -->
+        <section id="cover" class="manual-section active-section">
+            <div class="cover-wrapper">
+                <div class="cover-frame crt-effect">
+                    <div class="cover-image-container">
+                        <img src="assets/cover-render.png" alt="Terrana Out of Frame Render" class="hero-render">
+                        <!-- LOCALIZED PLASMA THRUSTER WAKE EMITTER LAYER -->
+                        <div class="thruster-glow-matrix"></div>
+                    </div>
+                    <div class="cover-title">
+                        <h1 class="glitch-title" data-text="TERRANA">TERRANA</h1>
+                        <p class="subtitle">TACTICAL SHIP OPERATING MANUAL // DECK SCHEMATICS</p>
+                        
+                        <!-- RE-MAPPED COPYRIGHT FOOTER ARCHIVE -->
+                        <div class="cover-copyright-block" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; letter-spacing: 1px;">
+                            <p>&copy; 2026 All Rights Reserved. // 22nd May 2026</p>
+                            <p>Proprietary Blueprint Asset developed exclusively for</p>
+			                <p>AngelStarr Systems Core Network Operations.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 01: VESSEL SPECIFICATIONS (PHOTO-REPLICATED UI SUITE) -->
+        <section id="specs" class="manual-section">
+            <h2>01. VESSEL SPECIFICATIONS</h2>
+            
+            <div class="starfield-ui-wrapper">
+                
+                <!-- LEFT COLUMN: DIAGNOSTIC TELEMETRY & SYSTEM BARS -->
+                <div class="ui-panel-left">
+                    <div class="ship-systems-container">
+                        <div class="ui-header-text">SHIP SYSTEMS</div>
+                        
+                            <div class="systems-grid-row">
+                            	<div class="system-col" data-system="PAR">
+			    	<div class="bar-meter-track" data-bars="12"></div>
+			    	<div class="system-tag-box">PAR</div>
+			    	<span class="power-static" data-system="PAR">12</span>
+			    </div>
+                            <div class="system-col" data-system="EM">
+                                <div class="bar-meter-track" data-bars="12"></div>
+                                <div class="system-tag-box">EM</div>
+                                <span class="power-static" data-system="EM">12</span>
+                            </div>
+                            <div class="system-col" data-system="MSL">
+                                <div class="bar-meter-track" data-bars="12"></div>
+                                <div class="system-tag-box">MSL</div>
+                                <span class="power-static" data-system="MSL">12</span>
+                            </div>
+                            <div class="system-col" data-system="ENG">
+                                <div class="bar-meter-track" data-bars="12"></div>
+                                <div class="system-tag-box">ENG</div>
+                                <span class="power-static" data-system="ENG">10</span>
+                            </div>
+                            <div class="system-col" data-system="SHD">
+                                <div class="bar-meter-track" data-bars="12"></div>
+                                <div class="system-tag-box">SHD</div>
+                                <span class="power-static" data-system="SHD">12</span>
+                            </div>
+                            <div class="system-col" data-system="GRV">
+                                <div class="bar-meter-track" data-bars="12"></div>
+                                <div class="system-tag-box">GRV</div>
+                                <span class="power-static" data-system="GRV">11</span>
+                            </div>
+                        </div>
+
+                        <div class="branching-schematic-harness"></div>
+                        
+                        <button id="system-power-btn" class="select-system-banner">
+                            INITIALIZE MATRIX
+                        </button>
+
+                        <div class="horizontal-sub-matrix-bar"></div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: OVERVIEW DECK MATRIX -->
+                <div class="ui-panel-right">
+                    <div class="overview-header-accent">Ship Overview</div>
+                    
+                    <div class="overview-stats-body">
+                        <!-- STAT TRACKS WITH SLIDER OVERLAYS -->
+                        <div class="stat-slider-row">
+                            <div class="stat-labels"><span>FUEL</span><span>300</span></div>
+                            <div class="slider-track-line data-full"></div>
+                        </div>
+                        <div class="stat-slider-row">
+                            <div class="stat-labels"><span>HULL</span><span>1000/1000</span></div>
+                            <div class="slider-track-line data-full"></div>
+                        </div>
+                        <div class="stat-slider-row">
+                            <div class="stat-labels"><span>CARGO</span><span>1222/31500</span></div>
+                            <div class="slider-track-line data-cargo"></div>
+                            <div class="shielded-capacity-subtext">SHIELDED CAPACITY: 10000</div>
+                        </div>
+
+                        <hr class="panel-inner-divider">
+
+                        <!-- INTERACTIVE GRID LAYOUT FOR CORE SPECS -->
+                        <div class="telemetry-quad-mesh">
+                            <div class="mesh-cell">
+                                <div class="cell-icon-wrap"><span class="icon-shape spec-c-box">C</span></div>
+                                <div class="cell-data-block">
+                                    <span class="cell-lbl">REACTOR</span>
+                                    <span class="cell-val">995</span>
+                                </div>
+                            </div>
+                            <div class="mesh-cell">
+                                <div class="cell-icon-wrap"><div class="icon-circle-cross"></div></div>
+                                <div class="cell-data-block">
+                                    <span class="cell-lbl">CREW</span>
+                                    <span class="cell-val">50</span>
+                                </div>
+                            </div>
+                            <div class="mesh-cell">
+                                <div class="cell-icon-wrap"><div class="icon-circle-arrows"></div></div>
+                                <div class="cell-data-block">
+                                    <span class="cell-lbl">JUMP</span>
+                                    <span class="cell-val">30 LY</span>
+                                </div>
+                            </div>
+                            <div class="mesh-cell">
+                                <div class="cell-icon-wrap"><div class="icon-circle-shield"></div></div>
+                                <div class="cell-data-block">
+                                    <span class="cell-lbl">SHIELD</span>
+                                    <span class="cell-val">10000</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WEAPON INTEGRATION DATA FOOTER -->
+                        <div class="weapons-triple-row">
+                            <div class="wpn-sub-cell"><div class="icon-circle-wpn"></div><div><span class="cell-lbl">PAR</span><span class="cell-val-small">103</span></div></div>
+                            <div class="wpn-sub-cell"><div><span class="cell-lbl">EM</span><span class="cell-val-small">3</span></div></div>
+                            <div class="wpn-sub-cell"><div><span class="cell-lbl">MSL</span><span class="cell-val-small">825</span></div></div>
+                        </div>
+
+                        <hr class="panel-inner-divider">
+
+                        <div class="registration-status-tag">REGISTERED</div>
+
+                        <!-- VALUATION METRIC DATA GRID -->
+                        <div class="valuation-meta-row">
+                            <div class="val-block"><span class="cell-lbl">VALUE</span><span class="cell-val-large">128919</span></div>
+                            <div class="val-block"><span class="cell-lbl">MASS</span><span class="cell-val-large">1312</span></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- COMPONENT DATA SHEET DROPDOWNS -->
+            <div class="grid-container specs-grid" style="margin-top: 40px;">
+                <div class="spec-card">
+                    <h3>CHASSIS OVERRIDE PROFILE</h3>
+                    <p><strong>Designation:</strong> Terrana</p>
+                    <p><strong>Classification:</strong> Class C Heavy Vessel</p>
+                    <p><strong>Core Network:</strong> AngelStarr Systems Interface</p>
+                    <p><strong>Top Speed:</strong> 130 m/s</p>
+                    <p><strong>Mobility Matrix:</strong> 100</p>
+                    <p><strong>Base Market Value:</strong> 128,919 Credits</p>
+                </div>
+                <div class="spec-card">
+                    <h3>ARMAMENT DETAILS</h3>
+                    <p><strong>PAR: PBO-300 Auto Alpha Beam (x4)</strong><br>Fire Rate: 4 // Range: 3900m // Hull Dmg: 25.93 // Shield Dmg: 25.93</p>
+                    <p><strong>MSL: Tsukisasu 50k Missile Launcher (x3)</strong><br>Fire Rate: 1 // Range: 6630m // Hull Dmg: 275.04 // Shield Dmg: 185.63</p>
+                    <p><strong>EM: EMP-1000 Suppressor (x3)</strong><br>Fire Rate: 0.80 // Range: 1040m // EM Dmg: 54</p>
+                </div>
+                <div class="spec-card">
+                    <h3>PROPULSION & HULL MANIFEST</h3>
+                    <p><strong>Primary Powerplant:</strong> Pinch 8Z Reactor // Generated Power: 40</p>
+                    <p><strong>Hyperdrive Core:</strong> J-52 Gamma Grav Drive // Grav Jump Thrust: 50</p>
+                    <p><strong>Propulsion Drive:</strong> Modded Heavy Engine Grid Array // Mass Override: 240</p>
+                    <p><strong>Landing Subsystems:</strong> NG-20 Wide Configuration Landers (x4) & Hope 5 Integrated Assemblies (x2)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 02: DECK BLUEPRINTS -->
+        <section id="blueprints" class="manual-section">
+            <h2>02. MASTER DECK BLUEPRINTS</h2>
+            <div class="blueprint-container">
+                <div class="legend-panel">
+                    <h3>LEGEND & KEY MATRIX</h3>
+                    <span class="interaction-prompt">// CLICK IMAGE TO ENLARGE</span>
+                    <img src="assets/Blueprints/Legend.png" alt="Legend" class="legend-img zoomable-asset">
+                </div>
+                <div class="blueprint-viewer">
+                    <div class="tab-controls">
+                        <button class="bp-tab active" onclick="switchBlueprint(1)">DECK 1</button>
+                        <button class="bp-tab" onclick="switchBlueprint(2)">DECK 2</button>
+                        <button class="bp-tab" onclick="switchBlueprint(3)">DECK 3</button>
+                        <button class="bp-tab" onclick="switchBlueprint(4)">DECK 4</button>
+                        <button class="bp-tab" onclick="switchBlueprint(5)">DECK 5</button>
+                    </div>
+                    <div class="display-box text-center">
+                        <img id="active-blueprint" src="assets/Blueprints/Lvl1.png" alt="Active Blueprint View">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 03: STRUCTURAL BREAKDOWN -->
+        <section id="breakdown" class="manual-section">
+            <h2>03. MULTI-LEVEL STRUCTURAL BREAKDOWN</h2>
+            <div class="breakdown-container">
+                <div class="level-selector">
+                    <label for="lvl-select">SELECT STRUCTURAL LAYER:</label>
+                    <select id="lvl-select" onchange="updateBreakdownLayer()">
+                        <option value="1">Level 1</option>
+                        <option value="2">Level 2</option>
+                        <option value="3">Level 3</option>
+                        <option value="4">Level 4</option>
+                        <option value="5">Level 5</option>
+                    </select>
+                </div>
+
+                <div class="quad-grid">
+                    <div class="view-card"><span>TOP PROJECTION</span><img id="view-top" src="assets/Level 1/Top1.png" alt="Top View" class="zoomable-asset"></div>
+                    <div class="view-card"><span>SIDE PROJECTION</span><img id="view-side" src="assets/Level 1/Side1.png" alt="Side View" class="zoomable-asset"></div>
+                    <div class="view-card"><span>BACK PROJECTION</span><img id="view-back" src="assets/Level 1/Back1.png" alt="Back View" class="zoomable-asset"></div>
+                    <div class="view-card"><span>FRONT PROJECTION</span><img id="view-front" src="assets/Level 1/Front1.png" alt="Front View" class="zoomable-asset"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 04: MODIFICATION CREDITS -->
+        <section id="credits" class="manual-section">
+            <h2>04. ENGINEERING MODIFICATION CREDITS</h2>
+            
+            <div class="grid-container integration-grid">
+                <!-- MASTER MOD MANIFEST ARCHIVE -->
+                <div class="credits-card main-manifest">
+                    <h3>INTEGRATED ARCHITECTURAL PACKAGES</h3>
+                    <div class="manifest-container">
+                        
+                        <div class="manifest-entry">
+                            <div class="entry-meta">
+                                <span class="module-title">Avontech Shipyards</span>
+                                <span class="author-tag">AUTHOR: Kaos_nyrb</span>
+                            </div>
+                            <div class="entry-desc">
+                                Specialized structural profiles deployed for specific aesthetic adjustments. Provides foundational components for complex external hulls and geometric custom plating layers.
+                            </div>
+                            <a href="https://creations.bethesda.net/en/starfield/details/32b36186-7136-41eb-8522-cba41fa271e2/Avontech_Shipyards" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                        </div>
+
+                        <div class="manifest-entry">
+                            <div class="entry-meta">
+                                <span class="module-title">Avontech Traveller</span>
+                                <span class="author-tag">AUTHOR: Kaos_nyrb</span>
+                            </div>
+                            <div class="entry-desc">
+                                Supplementary detailing assets and alternative structure modules tailored for deep space exploratory frame contours.
+                            </div>
+                            <a href="https://creations.bethesda.net/en/starfield/details/fb504dad-865a-4b2a-b09f-1485c5cdac94/Avontech_Traveller" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                        </div>
+
+                        <div class="manifest-entry">
+                            <div class="entry-meta">
+                                <span class="module-title">Aevi's Aerospace</span>
+                                <span class="author-tag">AUTHOR: Aevi_Daudi</span>
+                            </div>
+                            <div class="entry-desc">Custom Main Deck systems integrations and high-fidelity peripheral structural framing.</div>
+                            <a href="https://creations.bethesda.net/en/starfield/details/81746af5-ee74-4686-8e17-e11be4f71529/Aevi__39_s_Aerospace" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                        </div>
+
+                        <div class="manifest-entry">
+                            <div class="entry-meta">
+                                <span class="module-title">Luxurious Ship Habs</span>
+                                <span class="author-tag">AUTHOR: DownfallNemesis</span>
+                            </div>
+                            <div class="entry-desc">Premium interior design variants, custom pool matrix configurations, and high-end living quarters arrays.</div>
+                            <a href="https://creations.bethesda.net/en/starfield/details/b9021056-dc9b-442c-b944-b11787654965/Luxurious_Ship_Habs" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                        </div>
+
+                        <div class="manifest-entry">
+                            <div class="entry-meta">
+                                <span class="module-title">Stroud Premium Edition</span>
+                                <span class="author-tag">AUTHOR: vince134</span>
+                            </div>
+                            <div class="entry-desc">Upgraded luxury structural elements and custom detailing trims for sleek modular framing enhancements.</div>
+                            <a href="https://creations.bethesda.net/en/starfield/details/c2587ce5-be5a-4c01-a59c-09fe816d3124/Stroud_Premium_Edition" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                        </div>
+
+                        <div class="manifest-entry warning-highlight">
+                            <div class="entry-meta">
+                                <span class="module-title">Falkland Systems Ship Services</span>
+                                <span class="author-tag">AUTHOR: Hjalmere</span>
+                                <span class="status-flag alert-color">PAID ARCHITECTURE</span>
+                            </div>
+                            <div class="entry-desc">Custom structural frame extensions and tailored high-stress hab internal variations.</div>
+                            <a href="https://creations.bethesda.net/en/starfield/details/6cbf2c64-b736-4d95-bf06-38183a94b359/Falkland_Systems_Ship_Services" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                        </div>
+
+                        <!-- EXPLICIT TELEMETRY MAINTENANCE DISCLAIMER (RELOCATED UNDER FALKLAND MODULE) -->
+                        <div class="telemetry-disclaimer" style="margin-top: 15px; margin-bottom: 0;">
+                            <strong>// WARNING: REPOSITORY AVAILABILITY PROFILE</strong>
+                            <p>Engineering modules can disappear, undergo structural replacement, or be completely removed/updated by their authors. If a direct telemetry target profile returns an interface failure, check the primary Bethesda Creations site immediately and search via a similar asset name to track down and deploy the latest revisions.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- CORE OVERRIDES AND MANIPULATION STACKS -->
+                <div class="credits-side-panel">
+                    
+                    <!-- UTILITY CRITICAL MATRIX -->
+                    <div class="credits-card utility-card">
+                        <h3>CORE ENGINE OVERRIDES</h3>
+                        <div class="manifest-entry-compact">
+                            <strong>Larger Ship Size Limit</strong> <span class="author-subtext">by Eveos_3490</span>
+                            <p>Forced physical dimensional parameters past standard ship construction caps, allowing heavy module assembly limits.</p>
+                            <a href="https://creations.bethesda.net/en/starfield/details/9ee78db2-974c-4499-9b8d-41c485a502e3/Larger_Ship_Size_Limit" target="_blank" class="telemetry-link-compact">[TELEMETRY]</a>
+                        </div>
+                        <div class="manifest-entry-compact">
+                            <strong>Evasive Stealth Drive Fix</strong> <span class="author-subtext">by the_holographic</span>
+                            <p>Corrects core matrix telemetry loops when operating high-output engine profiles behind tactical arrays.</p>
+                            <a href="https://creations.bethesda.net/en/starfield/details/f1f1925c-9cbb-4ae1-8fdd-715abed775e0/Evasive_Stealth_Drive_Fix" target="_blank" class="telemetry-link-compact">[TELEMETRY]</a>
+                        </div>
+                    </div>
+
+                    <!-- DOOR CONFIGURATION MATRIX -->
+                    <div class="credits-card utility-card">
+                        <h3>INTERNAL ROUTING MANAGEMENT</h3>
+                        <div class="manifest-entry-compact">
+                            <strong>Hatch 22 - Simple Ship Doors</strong> <span class="author-subtext">by GrafPanzer</span>
+                            <p>Optimised logic routes for interior bulkheads, replacing standard entryways with efficient mechanics to prevent routing loops.</p>
+                            <a href="https://creations.bethesda.net/en/starfield/details/64f98341-49ba-4845-a8e6-f85c3add32a8/Hatch_22___Simple_Ship_Doors" target="_blank" class="telemetry-link-compact">[TELEMETRY]</a>
+                        </div>
+                    </div>
+
+                    <!-- MASS MANIPULATION CHASSIS UTILITIES -->
+                    <div class="credits-card utility-card">
+                        <h3>CHASSIS TACTICAL MANIPULATION</h3>
+                        <div class="manipulation-block">
+                            <p>Dynamic engine parameters, structural hull metrics, net load metrics, and maneuverability tracking are processed through automated overrides.</p>
+                            <ul class="terminal-notes">
+                                <li>
+                                    <strong>In-Chassis Manipulation:</strong> Managed actively via specialized internal engines by gir489. 
+                                    <a href="https://creations.bethesda.net/en/starfield/details/eeb649cd-d330-4a08-8bcf-ecf4f1116ba1/The_Cheat_Terminal" target="_blank" class="terminal-notes-link">[CHEAT TERMINAL PROTOCOLS]</a>
+                                </li>
+                                <li>
+                                    <strong>Ramtech Unlimited:</strong> Advanced modular upgrades framework by JRamosWorks. Verified dynamically via terminal profile links.
+                                    <a href="https://creations.bethesda.net/en/starfield/all?author_displayname=JRamosWorks" target="_blank" class="telemetry-link-compact">[DETECT AUTHOR REVISIONS]</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Global Technical Schematic Magnification Lightbox Overlay -->
+    <div id="lightbox-overlay" class="lightbox-overlay">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-display" id="lightbox-display" src="" alt="Enlarged Projection Matrix">
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
