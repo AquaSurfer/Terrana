@@ -4,26 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TERRANA - Class C Technical Manual</title>
+    <link rel="icon" type="image/png" href="assets/AngelStarrLOGO.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+    <!-- BOOT SEQUENCE OVERLAY -->
+    <div id="boot-overlay">
+        <div class="boot-logo">TERRANA</div>
+        <div class="boot-terminal" id="boot-terminal"></div>
+        <button class="boot-skip-btn" id="boot-skip">[ SKIP BOOT SEQUENCE ]</button>
+    </div>
 
     <div class="schematic-bg"></div>
 
     <nav class="sidebar">
         <div class="nav-header">
-            <h2 class="glitch-header" data-text="TERRANA">TERRANA</h2>
+            <div class="nav-header-row">
+                <h2 class="glitch-header" data-text="TERRANA">TERRANA</h2>
+            </div>
             <span>CLASS C SCHEMATICS</span>
         </div>
-        
+
         <div class="system-diagnostics">
             <div class="diag-title">// CORE LIVE SYSTEM STATUS</div>
-            <div class="diag-row"><span>REACTOR OUTPUT:</span> <span id="tick-reactor" class="tick-value">0</span>%</div>
-            <div class="diag-row"><span>SHIELD CAPACITY:</span> <span id="tick-shields" class="tick-value">0</span> MW</div>
-            <div class="diag-row"><span>SYS INTERFACE:</span> <span class="cyan-text">ONLINE</span></div>
+            <div class="diag-row"><span>REACTOR OUTPUT:</span><span><span id="tick-reactor" class="tick-value">0</span>&nbsp;%</span></div>
+            <div class="diag-row"><span>SHIELD CAPACITY:</span><span><span id="tick-shields" class="tick-value">0</span>&nbsp;MW</span></div>
+            <div class="diag-row"><span>SYS INTERFACE:</span><span class="cyan-text">ONLINE<span class="blink-cursor">_</span></span></div>
         </div>
 
+        <div class="nav-matrix-label">// NAVIGATION MATRIX</div>
+
         <ul>
+            <div class="nav-progress-track"><div class="nav-progress-fill" id="nav-progress-fill"></div></div>
             <li><a href="#cover" class="active">00. Technical Archive</a></li>
             <li><a href="#specs">01. Vessel Specifications</a></li>
             <li><a href="#blueprints">02. Deck Blueprints</a></li>
@@ -31,16 +44,26 @@
             <li><a href="#credits">04. Engineering Modification Credits</a></li>
         </ul>
 
-        <div class="support-section" style="margin: 20px 0; text-align: center;">
-            <button onclick="window.open('https://paypal.me/aquasurfer', '_blank');" style="padding: 10px 20px; background-color: #0070ba; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-family: inherit;">
-                Support this project via PayPal
+        <div class="support-section">
+            <button onclick="window.open('https://paypal.me/aquasurfer', '_blank');" class="paypal-btn">
+                // SUPPORT THIS PROJECT
             </button>
+        </div>
+
+        <div class="telemetry-ticker"><span>// TELEMETRY NOMINAL // HULL INTEGRITY 100% // SHIELDS ONLINE // REACTOR STABLE // CREW LINK ACTIVE //</span></div>
+
+        <div class="sidebar-logo-block">
+            <img src="assets/AngelStarrLOGO.png" class="sidebar-logo" alt="AngelStarr Logo">
         </div>
 
         <div class="sidebar-footer">
             <button id="audio-toggle" class="audio-btn fx-audio-toggle">
                 <span class="audio-icon">🔊</span> AUDIO: ENABLED
-            </button>            
+            </button>
+            <button id="ambient-toggle" class="audio-btn" style="font-size:0.72rem;">
+                <span class="audio-icon">🌌</span> AMBIENT: OFF
+            </button>
+            <div class="ambient-indicator" id="ambient-indicator">// ENGINE HUM OFFLINE</div>
         </div>
     </nav>
 
@@ -49,18 +72,24 @@
         <section id="cover" class="manual-section active-section">
             <div class="cover-wrapper">
                 <div class="cover-frame crt-effect">
+                    <div class="star-particle-field"></div>
                     <div class="cover-image-container">
                         <img src="assets/cover-render.png" alt="Terrana Out of Frame Render" class="hero-render">
-                        <div class="thruster-glow-matrix"></div>
                     </div>
                     <div class="cover-title">
                         <h1 class="glitch-title" data-text="TERRANA">TERRANA</h1>
-                        <p class="subtitle">TACTICAL SHIP OPERATING MANUAL // DECK SCHEMATICS</p>
-                        
-                        <div class="cover-copyright-block" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; letter-spacing: 1px;">
-                            <p>&copy; 2026 All Rights Reserved. // 22nd May 2026</p>
-                            <p>Proprietary Blueprint Asset developed exclusively for</p>
-                            <p>AngelStarr Systems Core Network Operations.</p>
+                        <p class="subtitle" id="cover-subtitle"></p>
+                        <div class="cover-status-row">
+                            <div class="classified-stamp">CLASSIFIED</div>
+                            <div class="auth-panel">
+                                <div class="auth-label" id="auth-label">AUTHENTICATING</div>
+                                <div class="auth-bar"><div class="auth-fill" id="auth-fill"></div></div>
+                            </div>
+                        </div>
+                        <div class="cover-copyright-block">
+                            <p>&copy; 2026 All Code & Image Rights Reserved. // 22nd May 2026</p>
+                            <p>Proprietary Developed exclusively for</p>
+                            <p>Aquasurfer & AngelStarr Systems Core Network Operations.</p>
                         </div>
                     </div>
                 </div>
@@ -69,13 +98,13 @@
 
         <section id="specs" class="manual-section">
             <h2>01. VESSEL SPECIFICATIONS</h2>
-            
+
             <div class="starfield-ui-wrapper">
-                
+
                 <div class="ui-panel-left">
                     <div class="ship-systems-container">
                         <div class="ui-header-text">SHIP SYSTEMS</div>
-                        
+
                         <div class="systems-grid-row">
                             <div class="system-col" data-system="PAR">
                                 <div class="bar-meter-track" data-bars="12"></div>
@@ -110,7 +139,7 @@
                         </div>
 
                         <div class="branching-schematic-harness"></div>
-                        
+
                         <button id="system-power-btn" class="select-system-banner">
                             INITIALIZE MATRIX
                         </button>
@@ -121,7 +150,7 @@
 
                 <div class="ui-panel-right">
                     <div class="overview-header-accent">Ship Overview</div>
-                    
+
                     <div class="overview-stats-body">
                         <div class="stat-slider-row">
                             <div class="stat-labels"><span>FUEL</span><span>300</span></div>
@@ -189,7 +218,7 @@
 
             </div>
 
-            <div class="grid-container specs-grid" style="margin-top: 40px;">
+            <div class="grid-container specs-grid">
                 <div class="spec-card">
                     <h3>CHASSIS OVERRIDE PROFILE</h3>
                     <p><strong>Designation:</strong> Terrana</p>
@@ -225,14 +254,25 @@
                 </div>
                 <div class="blueprint-viewer">
                     <div class="tab-controls">
-                        <button class="bp-tab" onclick="switchBlueprint(1)">DECK 1</button>
+                        <button class="bp-tab active" onclick="switchBlueprint(1)">DECK 1</button>
                         <button class="bp-tab" onclick="switchBlueprint(2)">DECK 2</button>
                         <button class="bp-tab" onclick="switchBlueprint(3)">DECK 3</button>
                         <button class="bp-tab" onclick="switchBlueprint(4)">DECK 4</button>
                         <button class="bp-tab" onclick="switchBlueprint(5)">DECK 5</button>
                     </div>
-                    <div class="display-box text-center">
+                    <div id="active-deck-label" class="active-deck-label">// ACTIVE: DECK 1</div>
+                    <div class="display-box" id="blueprint-display-box">
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" id="zoom-in-btn" title="Zoom In">+</button>
+                            <button class="zoom-btn" id="zoom-out-btn" title="Zoom Out">−</button>
+                            <button class="zoom-btn" id="zoom-reset-btn" title="Reset" style="font-size:0.6rem;width:40px;">RST</button>
+                        </div>
                         <img id="active-blueprint" src="assets/Blueprints/Lvl1.png" alt="Active Blueprint View">
+                        <div class="blueprint-minimap" id="blueprint-minimap">
+                            <span class="minimap-label">MINIMAP</span>
+                            <img class="minimap-img" id="minimap-img" src="assets/Blueprints/Lvl1.png" alt="">
+                            <div class="minimap-viewport" id="minimap-viewport"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -253,22 +293,23 @@
                 </div>
 
                 <div class="quad-grid">
-                    <div class="view-card"><span>TOP PROJECTION</span><img id="view-top" src="assets/Level 1/Top1.png" alt="Top View" class="zoomable-asset"></div>
-                    <div class="view-card"><span>SIDE PROJECTION</span><img id="view-side" src="assets/Level 1/Side1.png" alt="Side View" class="zoomable-asset"></div>
-                    <div class="view-card"><span>BACK PROJECTION</span><img id="view-back" src="assets/Level 1/Back1.png" alt="Back View" class="zoomable-asset"></div>
-                    <div class="view-card"><span>FRONT PROJECTION</span><img id="view-front" src="assets/Level 1/Front1.png" alt="Front View" class="zoomable-asset"></div>
+                    <div class="view-card"><span id="label-top">TOP PROJECTION — LEVEL 1</span><span class="interaction-prompt view-card-prompt">// CLICK IMAGE TO ENLARGE</span><img id="view-top" src="assets/Level 1/Top1.png" alt="Top View" class="zoomable-asset"></div>
+                    <div class="view-card"><span id="label-port">PORT PROJECTION — LEVEL 1</span><span class="interaction-prompt view-card-prompt">// CLICK IMAGE TO ENLARGE</span><img id="view-port" src="assets/Level 1/Port1.png" alt="Port View" class="zoomable-asset"></div>
+                    <div class="view-card"><span id="label-aft">AFT PROJECTION — LEVEL 1</span><span class="interaction-prompt view-card-prompt">// CLICK IMAGE TO ENLARGE</span><img id="view-aft" src="assets/Level 1/Aft1.png" alt="Aft View" class="zoomable-asset"></div>
+                    <div class="view-card"><span id="label-fore">FORE PROJECTION — LEVEL 1</span><span class="interaction-prompt view-card-prompt">// CLICK IMAGE TO ENLARGE</span><img id="view-fore" src="assets/Level 1/Fore1.png" alt="Fore View" class="zoomable-asset"></div>
                 </div>
             </div>
         </section>
 
         <section id="credits" class="manual-section">
             <h2>04. ENGINEERING MODIFICATION CREDITS</h2>
-            
+
             <div class="grid-container integration-grid">
                 <div class="credits-card main-manifest">
                     <h3>INTEGRATED ARCHITECTURAL PACKAGES</h3>
+
                     <div class="manifest-container">
-                        
+
                         <div class="manifest-entry">
                             <div class="entry-meta">
                                 <span class="module-title">Avontech Shipyards</span>
@@ -277,7 +318,7 @@
                             <div class="entry-desc">
                                 Specialized structural profiles deployed for specific aesthetic adjustments. Provides foundational components for complex external hulls and geometric custom plating layers.
                             </div>
-                            <a href="https://creations.bethesda.net/en/starfield/details/32b36186-7136-41eb-8522-cba41fa271e2/Avontech_Shipyards" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                            <a href="https://creations.bethesda.net/en/starfield/details/32b36186-7136-41eb-8522-cba41fa271e2/Avontech_Shipyards" target="_blank" class="telemetry-link">// DETECT TARGET CREATION <span class="ext-link-icon">↗</span></a>
                         </div>
 
                         <div class="manifest-entry">
@@ -288,7 +329,7 @@
                             <div class="entry-desc">
                                 Supplementary detailing assets and alternative structure modules tailored for deep space exploratory frame contours.
                             </div>
-                            <a href="https://creations.bethesda.net/en/starfield/details/fb504dad-865a-4b2a-b09f-1485c5cdac94/Avontech_Traveller" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                            <a href="https://creations.bethesda.net/en/starfield/details/fb504dad-865a-4b2a-b09f-1485c5cdac94/Avontech_Traveller" target="_blank" class="telemetry-link">// DETECT TARGET CREATION <span class="ext-link-icon">↗</span></a>
                         </div>
 
                         <div class="manifest-entry">
@@ -297,7 +338,7 @@
                                 <span class="author-tag">AUTHOR: Aevi_Daudi</span>
                             </div>
                             <div class="entry-desc">Custom Main Deck systems integrations and high-fidelity peripheral structural framing.</div>
-                            <a href="https://creations.bethesda.net/en/starfield/details/81746af5-ee74-4686-8e17-e11be4f71529/Aevi__39_s_Aerospace" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                            <a href="https://creations.bethesda.net/en/starfield/details/81746af5-ee74-4686-8e17-e11be4f71529/Aevi__39_s_Aerospace" target="_blank" class="telemetry-link">// DETECT TARGET CREATION <span class="ext-link-icon">↗</span></a>
                         </div>
 
                         <div class="manifest-entry">
@@ -306,7 +347,7 @@
                                 <span class="author-tag">AUTHOR: DownfallNemesis</span>
                             </div>
                             <div class="entry-desc">Premium interior design variants, custom pool matrix configurations, and high-end living quarters arrays.</div>
-                            <a href="https://creations.bethesda.net/en/starfield/details/b9021056-dc9b-442c-b944-b11787654965/Luxurious_Ship_Habs" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                            <a href="https://creations.bethesda.net/en/starfield/details/b9021056-dc9b-442c-b944-b11787654965/Luxurious_Ship_Habs" target="_blank" class="telemetry-link">// DETECT TARGET CREATION <span class="ext-link-icon">↗</span></a>
                         </div>
 
                         <div class="manifest-entry">
@@ -315,7 +356,7 @@
                                 <span class="author-tag">AUTHOR: vince134</span>
                             </div>
                             <div class="entry-desc">Upgraded luxury structural elements and custom detailing trims for sleek modular framing enhancements.</div>
-                            <a href="https://creations.bethesda.net/en/starfield/details/c2587ce5-be5a-4c01-a59c-09fe816d3124/Stroud_Premium_Edition" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                            <a href="https://creations.bethesda.net/en/starfield/details/c2587ce5-be5a-4c01-a59c-09fe816d3124/Stroud_Premium_Edition" target="_blank" class="telemetry-link">// DETECT TARGET CREATION <span class="ext-link-icon">↗</span></a>
                         </div>
 
                         <div class="manifest-entry warning-highlight">
@@ -325,7 +366,7 @@
                                 <span class="status-flag alert-color">PAID ARCHITECTURE</span>
                             </div>
                             <div class="entry-desc">Custom structural frame extensions and tailored high-stress hab internal variations.</div>
-                            <a href="https://creations.bethesda.net/en/starfield/details/6cbf2c64-b736-4d95-bf06-38183a94b359/Falkland_Systems_Ship_Services" target="_blank" class="telemetry-link">// DETECT TARGET CREATION</a>
+                            <a href="https://creations.bethesda.net/en/starfield/details/6cbf2c64-b736-4d95-bf06-38183a94b359/Falkland_Systems_Ship_Services" target="_blank" class="telemetry-link">// DETECT TARGET CREATION <span class="ext-link-icon">↗</span></a>
                         </div>
 
                         <div class="telemetry-disclaimer" style="margin-top: 15px; margin-bottom: 0;">
@@ -337,18 +378,18 @@
                 </div>
 
                 <div class="credits-side-panel">
-                    
+
                     <div class="credits-card utility-card">
                         <h3>CORE ENGINE OVERRIDES</h3>
                         <div class="manifest-entry-compact">
                             <strong>Larger Ship Size Limit</strong> <span class="author-subtext">by Eveos_3490</span>
                             <p>Forced physical dimensional parameters past standard ship construction caps, allowing heavy module assembly limits.</p>
-                            <a href="https://creations.bethesda.net/en/starfield/details/9ee78db2-974c-4499-9b8d-41c485a502e3/Larger_Ship_Size_Limit" target="_blank" class="telemetry-link-compact">[TELEMETRY]</a>
+                            <a href="https://creations.bethesda.net/en/starfield/details/9ee78db2-974c-4499-9b8d-41c485a502e3/Larger_Ship_Size_Limit" target="_blank" class="telemetry-link-compact">[TELEMETRY] <span class="ext-link-icon">↗</span></a>
                         </div>
                         <div class="manifest-entry-compact">
                             <strong>Evasive Stealth Drive Fix</strong> <span class="author-subtext">by the_holographic</span>
                             <p>Corrects core matrix telemetry loops when operating high-output engine profiles behind tactical arrays.</p>
-                            <a href="https://creations.bethesda.net/en/starfield/details/f1f1925c-9cbb-4ae1-8fdd-715abed775e0/Evasive_Stealth_Drive_Fix" target="_blank" class="telemetry-link-compact">[TELEMETRY]</a>
+                            <a href="https://creations.bethesda.net/en/starfield/details/f1f1925c-9cbb-4ae1-8fdd-715abed775e0/Evasive_Stealth_Drive_Fix" target="_blank" class="telemetry-link-compact">[TELEMETRY] <span class="ext-link-icon">↗</span></a>
                         </div>
                     </div>
 
@@ -357,7 +398,7 @@
                         <div class="manifest-entry-compact">
                             <strong>Hatch 22 - Simple Ship Doors</strong> <span class="author-subtext">by GrafPanzer</span>
                             <p>Optimised logic routes for interior bulkheads, replacing standard entryways with efficient mechanics to prevent routing loops.</p>
-                            <a href="https://creations.bethesda.net/en/starfield/details/64f98341-49ba-4845-a8e6-f85c3add32a8/Hatch_22___Simple_Ship_Doors" target="_blank" class="telemetry-link-compact">[TELEMETRY]</a>
+                            <a href="https://creations.bethesda.net/en/starfield/details/64f98341-49ba-4845-a8e6-f85c3add32a8/Hatch_22___Simple_Ship_Doors" target="_blank" class="telemetry-link-compact">[TELEMETRY] <span class="ext-link-icon">↗</span></a>
                         </div>
                     </div>
 
@@ -367,12 +408,12 @@
                             <p>Dynamic engine parameters, structural hull metrics, net load metrics, and maneuverability tracking are processed through automated overrides.</p>
                             <ul class="terminal-notes">
                                 <li>
-                                    <strong>In-Chassis Manipulation:</strong> Managed actively via specialized internal engines by gir489. 
-                                    <a href="https://creations.bethesda.net/en/starfield/details/eeb649cd-d330-4a08-8bcf-ecf4f1116ba1/The_Cheat_Terminal" target="_blank" class="terminal-notes-link">[CHEAT TERMINAL PROTOCOLS]</a>
+                                    <strong>In-Chassis Manipulation:</strong> Managed actively via specialized internal engines by gir489.
+                                    <a href="https://creations.bethesda.net/en/starfield/details/eeb649cd-d330-4a08-8bcf-ecf4f1116ba1/The_Cheat_Terminal" target="_blank" class="terminal-notes-link">[CHEAT TERMINAL PROTOCOLS] <span class="ext-link-icon">↗</span></a>
                                 </li>
                                 <li>
                                     <strong>Ramtech Unlimited:</strong> Advanced modular upgrades framework by JRamosWorks. Verified dynamically via terminal profile links.
-                                    <a href="https://creations.bethesda.net/en/starfield/all?author_displayname=JRamosWorks" target="_blank" class="telemetry-link-compact">[DETECT AUTHOR REVISIONS]</a>
+                                    <a href="https://creations.bethesda.net/en/starfield/all?author_displayname=JRamosWorks" target="_blank" class="telemetry-link-compact">[DETECT AUTHOR REVISIONS] <span class="ext-link-icon">↗</span></a>
                                 </li>
                             </ul>
                         </div>
@@ -386,7 +427,21 @@
 
     <div id="lightbox-overlay" class="lightbox-overlay">
         <span class="lightbox-close">&times;</span>
-        <img class="lightbox-display" id="lightbox-display" src="" alt="Enlarged Projection Matrix">
+        <div class="lightbox-projection-label" id="lightbox-projection-label"></div>
+        <div class="lightbox-inner" id="lightbox-inner">
+            <img class="lightbox-display" id="lightbox-display" src="" alt="Enlarged Projection Matrix">
+            <div class="lightbox-minimap" id="lightbox-minimap">
+                <span class="minimap-label">MINIMAP</span>
+                <img class="minimap-img" id="lightbox-minimap-img" src="" alt="">
+                <div class="minimap-viewport" id="lightbox-minimap-vp"></div>
+            </div>
+        </div>
+        <div class="lightbox-zoom-controls">
+            <button class="zoom-btn" id="lb-zoom-in" title="Zoom In">+</button>
+            <button class="zoom-btn" id="lb-zoom-out" title="Zoom Out">−</button>
+            <button class="zoom-btn" id="lb-zoom-reset" title="Reset" style="font-size:0.6rem;width:40px;">RST</button>
+        </div>
+        <div class="lightbox-hint">// SCROLL TO ZOOM · DRAG TO PAN · ESC TO CLOSE</div>
     </div>
 
     <script src="script.js" defer></script>
