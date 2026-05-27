@@ -531,6 +531,54 @@ document.addEventListener("DOMContentLoaded", () => {
     let specsAnimated = false;
 
     // ============================================================
+    // OPERATOR ACTIVITY LOGGER — hooks into nav, lightbox, blueprint, breakdown
+    // ============================================================
+    const SECTION_LOG_LABELS = {
+        '#cover':       'TECHNICAL ARCHIVE — COVER PAGE',
+        '#specs':       'VESSEL SPECIFICATIONS — SECTION 01',
+        '#blueprints':  'DECK BLUEPRINTS — SECTION 02',
+        '#breakdown':   'STRUCTURAL BREAKDOWN — SECTION 03',
+        '#credits':     'ENGINEERING MODIFICATION CREDITS — SECTION 04',
+        '#maintenance': 'MAINTENANCE & OVERRIDES — SECTION 05',
+    };
+
+    // Exposed globally so switchBlueprint / updateBreakdownLayer can call it
+    window.logOperatorEvent = function(type, msg) {
+        const logBody = document.getElementById('maint-log-body');
+        const countEl = document.getElementById('maint-entry-count');
+        if (!logBody) return;
+
+        const now = new Date();
+        const ts  = `[${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getFullYear()).slice(2)} - ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}]`;
+
+        const row = document.createElement('div');
+        row.className = `maint-log-row maint-op maint-row-new`;
+
+        const tsEl = document.createElement('span');
+        tsEl.className = 'maint-timestamp';
+        tsEl.textContent = ts;
+
+        const badge = document.createElement('span');
+        badge.className = 'maint-badge maint-badge-op';
+        badge.textContent = 'OP';
+
+        const text = document.createElement('span');
+        text.className = 'maint-msg';
+        text.textContent = msg;
+
+        row.appendChild(tsEl);
+        row.appendChild(badge);
+        row.appendChild(text);
+        logBody.appendChild(row);
+        logBody.scrollTop = logBody.scrollHeight;
+
+        const allRows = logBody.querySelectorAll('.maint-log-row').length;
+        if (countEl) countEl.textContent = `${allRows} EVENT${allRows !== 1 ? 'S' : ''} LOGGED`;
+
+        setTimeout(() => row.classList.remove('maint-row-new'), 600);
+    };
+
+    // ============================================================
     // NAVIGATION SUBROUTINE ENGINE
     // ============================================================
     function navigateToSection(targetId) {
@@ -563,6 +611,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 });
             });
+
+            // Log operator navigation (skip cover on initial load — too noisy)
+            const label = SECTION_LOG_LABELS[targetId];
+            if (label && targetId !== '#cover') {
+                window.logOperatorEvent('ok', `OPERATOR: ACCESSED ${label}`);
+            }
         }
 
         updateProgressIndicator(targetId);
@@ -666,8 +720,12 @@ document.addEventListener("DOMContentLoaded", () => {
         resetLbView();
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
-        // Wait for image load to size correctly
         lightboxImg.onload = () => applyLbTransform();
+
+        // Log operator image inspection
+        if (labelText) {
+            window.logOperatorEvent('ok', `OPERATOR: OPENED PROJECTION VIEW — ${labelText}`);
+        }
     }
 
     // Bind zoomable assets
@@ -1066,6 +1124,11 @@ function switchBlueprint(deckNumber) {
         deckLabel.textContent = `// ACTIVE: DECK ${deckNumber}`;
     }
 
+    // Log operator deck switch
+    if (window.logOperatorEvent) {
+        window.logOperatorEvent('ok', `OPERATOR: SWITCHED BLUEPRINT VIEW — DECK ${deckNumber}`);
+    }
+
     // Reset pan/zoom on deck switch
     const displayBox = document.getElementById('blueprint-display-box');
     const bpImg = document.getElementById('active-blueprint');
@@ -1114,6 +1177,11 @@ function updateBreakdownLayer() {
         if (labelPort) labelPort.textContent = `PORT PROJECTION — LEVEL ${selectedLevel}`;
         if (labelAft)  labelAft.textContent  = `AFT PROJECTION — LEVEL ${selectedLevel}`;
         if (labelFore) labelFore.textContent = `FORE PROJECTION — LEVEL ${selectedLevel}`;
+
+        // Log operator level switch
+        if (window.logOperatorEvent) {
+            window.logOperatorEvent('ok', `OPERATOR: STRUCTURAL BREAKDOWN SWITCHED — LEVEL ${selectedLevel}`);
+        }
 
     }, 260);
 }
