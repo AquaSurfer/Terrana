@@ -1202,7 +1202,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---- TRACK LIST — edit here to add/remove tracks ----
     var TRACKS = [
         { file: 'ShatteredUnity.mp3', title: 'SHATTERED UNITY' },
-        { file: 'AngelStar.mp3',      title: 'ANGEL STAR'      }
+        { file: 'AngelStarr.mp3',      title: 'ANGELSTARR'      }
         // Add more tracks here, e.g.:
         // { file: 'MyTrack.mp3', title: 'MY TRACK' },
     ];
