@@ -51,7 +51,7 @@
             </button>
         </div>
 
-        <div class="telemetry-ticker"><span>// TELEMETRY NOMINAL // HULL INTEGRITY 100% // SHIELDS ONLINE // REACTOR STABLE // CREW LINK ACTIVE //</span></div>
+
 
         <div class="sidebar-logo-block">
             <img src="assets/AngelStarrLOGO.png" class="sidebar-logo" alt="AngelStarr Logo">
@@ -65,6 +65,9 @@
                 <span class="audio-icon">🌌</span> AMBIENT: OFF
             </button>
             <div class="ambient-indicator" id="ambient-indicator">// ENGINE HUM OFFLINE</div>
+            <button id="music-toggle" class="audio-btn music-btn">
+                <span class="audio-icon">🎵</span> MUSIC: OFFLINE
+            </button>
         </div>
     </nav>
 
@@ -429,18 +432,45 @@
 
             <div class="maintenance-layout">
 
-                <div class="maintenance-log-panel">
-                    <div class="maint-panel-header">
-                        <span class="maint-header-title">// ACTIVE SYSTEM EVENT LOG</span>
-                        <span class="maint-header-status">FEED: <span class="cyan-text">LIVE<span class="blink-cursor">_</span></span></span>
+                <div class="maintenance-left-col">
+
+                    <div class="maintenance-log-panel">
+                        <div class="maint-panel-header">
+                            <span class="maint-header-title">// ACTIVE SYSTEM EVENT LOG</span>
+                            <span class="maint-header-status">FEED: <span class="cyan-text">LIVE<span class="blink-cursor">_</span></span></span>
+                        </div>
+                        <div class="maint-log-body" id="maint-log-body">
+                            <!-- JS populated -->
+                        </div>
+                        <div class="maint-log-footer">
+                            <span id="maint-entry-count" class="maint-entry-count">0 EVENTS LOGGED</span>
+                            <span class="maint-scroll-hint">// SCROLL FOR HISTORY</span>
+                        </div>
                     </div>
-                    <div class="maint-log-body" id="maint-log-body">
-                        <!-- JS populated -->
+
+                    <!-- AUDIO STATUS PANEL — directly below the log window -->
+                    <div class="audio-status-panel">
+                        <div class="audio-status-header">// AUDIO SUBSYSTEM STATUS</div>
+                        <div class="audio-status-rows">
+                            <div class="audio-status-row">
+                                <span class="status-dot dot-green" id="status-dot-audio"></span>
+                                <span class="status-label" id="status-label-audio">AUDIO FX: ONLINE</span>
+                            </div>
+                            <div class="audio-status-row">
+                                <span class="status-dot dot-off" id="status-dot-ambient"></span>
+                                <span class="status-label" id="status-label-ambient">AMBIENT ENGINES: OFFLINE</span>
+                            </div>
+                            <div class="audio-status-row">
+                                <span class="status-dot dot-off" id="status-dot-music"></span>
+                                <span class="status-label" id="status-label-music">MUSIC: OFFLINE</span>
+                            </div>
+                        </div>
+                        <div class="waveform-wrapper">
+                            <div class="waveform-label">// LIVE MUSIC WAVEFORM</div>
+                            <canvas id="audio-waveform-canvas" class="waveform-canvas"></canvas>
+                        </div>
                     </div>
-                    <div class="maint-log-footer">
-                        <span id="maint-entry-count" class="maint-entry-count">0 EVENTS LOGGED</span>
-                        <span class="maint-scroll-hint">// SCROLL FOR HISTORY</span>
-                    </div>
+
                 </div>
 
                 <div class="maintenance-side-col">
@@ -542,6 +572,7 @@
         <div class="lightbox-hint">// SCROLL TO ZOOM · DRAG TO PAN · ESC TO CLOSE</div>
     </div>
 
+    <audio id="music-player" src="assets/mp3/ShatteredUnity.mp3" preload="none" crossorigin="anonymous"></audio>
     <script src="script.js" defer></script>
 </body>
 </html>

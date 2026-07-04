@@ -115,10 +115,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 audioBtn.classList.remove('muted');
                 audioBtn.innerHTML = `<span class="audio-icon">🔊</span> AUDIO: ENABLED`;
                 playSystemPulse(180, 0.04, 'sine');
+                if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: AUDIO FX ENABLED — SYSTEM SOUND ACTIVE');
             } else {
                 audioBtn.classList.add('muted');
                 audioBtn.innerHTML = `<span class="audio-icon">🔇</span> AUDIO: MUTED`;
+                if (window.logOperatorEvent) window.logOperatorEvent('warn', 'OPERATOR: AUDIO FX MUTED — SYSTEM SOUND SUPPRESSED');
             }
+            updateAudioStatusPanel();
         });
     }
 
@@ -260,10 +263,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (ambientEnabled) {
                 ambientBtn.innerHTML = `<span class="audio-icon">🌌</span> AMBIENT: ON`;
                 startAmbient();
+                if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: AMBIENT ENGINE HUM ENGAGED — DRONE LAYERS ACTIVE');
             } else {
                 ambientBtn.innerHTML = `<span class="audio-icon">🌌</span> AMBIENT: OFF`;
                 stopAmbient();
+                if (window.logOperatorEvent) window.logOperatorEvent('warn', 'OPERATOR: AMBIENT ENGINE HUM DISENGAGED — DRONE OFFLINE');
             }
+            updateAudioStatusPanel();
         });
     }
 
@@ -451,6 +457,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         setTimeout(scheduleNextLiveEvent, 5000);
+
+        // Expose so other modules can push operator events
+        window.logOperatorEvent = function (type, msg) {
+            appendLogEntry(type, msg, true);
+        };
     })();
 
     // ============================================================
@@ -1080,6 +1091,41 @@ document.addEventListener("DOMContentLoaded", () => {
             isDragging = false;
         });
     }
+
+    // ============================================================
+    // AUDIO STATUS PANEL — updates the maintenance page indicators
+    // ============================================================
+    function updateAudioStatusPanel() {
+        const fxDot   = document.getElementById('status-dot-audio');
+        const fxLabel = document.getElementById('status-label-audio');
+        if (fxDot && fxLabel) {
+            fxDot.className     = audioSystemEnabled ? 'status-dot dot-green' : 'status-dot dot-amber';
+            fxLabel.textContent = audioSystemEnabled ? 'AUDIO FX: ONLINE' : 'AUDIO FX: MUTED';
+        }
+
+        const ambDot   = document.getElementById('status-dot-ambient');
+        const ambLabel = document.getElementById('status-label-ambient');
+        if (ambDot && ambLabel) {
+            ambDot.className     = ambientEnabled ? 'status-dot dot-green' : 'status-dot dot-off';
+            ambLabel.textContent = ambientEnabled ? 'AMBIENT ENGINES: RUNNING' : 'AMBIENT ENGINES: OFFLINE';
+        }
+
+        const mDot   = document.getElementById('status-dot-music');
+        const mLabel = document.getElementById('status-label-music');
+        if (mDot && mLabel) {
+            const playing = document.getElementById('music-toggle') &&
+                            document.getElementById('music-toggle').classList.contains('playing');
+            mDot.className     = playing ? 'status-dot dot-cyan pulse-dot' : 'status-dot dot-off';
+            mLabel.textContent = playing ? 'MUSIC: PLAYING' : 'MUSIC: OFFLINE';
+        }
+    }
+
+    // Expose so the music IIFE (outside DOMContentLoaded) can call it too
+    window.updateAudioStatusPanel = updateAudioStatusPanel;
+
+    // Initial state render
+    updateAudioStatusPanel();
+
 });
 
 // ============================================================
@@ -1143,8 +1189,139 @@ function switchBlueprint(deckNumber) {
 }
 
 // ============================================================
-// STRUCTURAL BREAKDOWN LAYER SWITCHER (global — called from onchange HTML)
 // ============================================================
+// ============================================================
+// MUSIC PLAYER
+// crossorigin="anonymous" on the <audio> tag allows
+// createMediaElementSource to read audio data without CORS
+// zeroing the analyser. GitHub Pages serves with CORS headers
+// so this works. Build graph on first click (user gesture).
+// ============================================================
+document.addEventListener('DOMContentLoaded', function () {
+    var btn   = document.getElementById('music-toggle');
+    var audio = document.getElementById('music-player');
+    if (!btn || !audio) return;
+
+    var actx     = null;
+    var analyser = null;
+    var graphBuilt = false;
+    var playing  = false;
+    var raf      = null;
+
+    function buildGraph() {
+        if (graphBuilt) return;
+        graphBuilt = true;
+        try {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            actx     = new AC();
+            analyser = actx.createAnalyser();
+            analyser.fftSize = 2048;
+            var src = actx.createMediaElementSource(audio);
+            src.connect(analyser);
+            analyser.connect(actx.destination);
+        } catch(e) {
+            console.warn('Audio graph failed:', e.message);
+            analyser = null;
+        }
+    }
+
+    audio.addEventListener('error', function () {
+        var c = audio.error ? audio.error.code : '?';
+        btn.innerHTML = '<span class="audio-icon">&#9888;</span> FILE ERR ' + c;
+    });
+
+    btn.addEventListener('click', function () {
+        if (!playing) {
+            buildGraph();
+            if (actx && actx.state === 'suspended') actx.resume();
+            audio.currentTime = 0;
+            audio.play().then(function () {
+                playing = true;
+                btn.classList.add('playing');
+                btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: PLAYING';
+                if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC PLAYBACK STARTED');
+                if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
+                startWave();
+            }).catch(function (e) {
+                btn.innerHTML = '<span class="audio-icon">&#9888;</span> ' + e.name;
+                console.error('play() failed:', e.name, e.message);
+            });
+        } else {
+            audio.pause();
+            audio.currentTime = 0;
+            playing = false;
+            btn.classList.remove('playing');
+            btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: OFFLINE';
+            if (window.logOperatorEvent) window.logOperatorEvent('warn', 'OPERATOR: MUSIC STOPPED');
+            if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
+            stopWave();
+        }
+    });
+
+    audio.addEventListener('ended', function () {
+        playing = false;
+        btn.classList.remove('playing');
+        btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: OFFLINE';
+        if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC TRACK ENDED');
+        if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
+        stopWave();
+    });
+
+    function startWave() {
+        var canvas = document.getElementById('audio-waveform-canvas');
+        if (!canvas) return;
+        var ctx = canvas.getContext('2d');
+
+        function draw() {
+            raf = requestAnimationFrame(draw);
+            var W = canvas.offsetWidth  || 600;
+            var H = canvas.offsetHeight || 120;
+            if (canvas.width  !== W) canvas.width  = W;
+            if (canvas.height !== H) canvas.height = H;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, W, H);
+            ctx.lineWidth   = 2;
+            ctx.strokeStyle = '#00f5d4';
+            ctx.beginPath();
+
+            if (analyser) {
+                var data   = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteTimeDomainData(data);
+                var sliceW = W / data.length;
+                for (var i = 0; i < data.length; i++) {
+                    var y = (data[i] / 128.0) * (H / 2);
+                    i === 0 ? ctx.moveTo(0, y) : ctx.lineTo(i * sliceW, y);
+                }
+            } else {
+                ctx.moveTo(0, H / 2);
+                ctx.lineTo(W, H / 2);
+            }
+            ctx.lineTo(W, H / 2);
+            ctx.stroke();
+        }
+        if (raf) cancelAnimationFrame(raf);
+        draw();
+    }
+
+    function stopWave() {
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+        var canvas = document.getElementById('audio-waveform-canvas');
+        if (!canvas) return;
+        canvas.width  = canvas.offsetWidth  || 600;
+        canvas.height = canvas.offsetHeight || 120;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'rgba(0,245,212,0.25)';
+        ctx.lineWidth   = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+    }
+});
 function updateBreakdownLayer() {
     const selector = document.getElementById('lvl-select');
     if (!selector) return;

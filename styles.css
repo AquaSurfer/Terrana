@@ -61,9 +61,10 @@ body {
     padding: 30px 20px;
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 18px;
     z-index: 100;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Header row: TERRANA text + logo side by side */
@@ -90,8 +91,8 @@ body {
 
 /* AngelStarr logo — 4× size, centred in its own block above audio buttons */
 .sidebar-logo {
-    width: 352px;
-    height: 352px;
+    width: 100%;
+    height: auto;
     object-fit: contain;
     flex-shrink: 0;
     filter: drop-shadow(0 0 18px rgba(0, 245, 212, 0.45));
@@ -256,7 +257,7 @@ body {
 
 /* Sidebar footer — audio button */
 .sidebar-footer {
-    margin-top: auto;
+    margin-top: -10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -1870,6 +1871,12 @@ a:hover .ext-link-icon {
     align-items: start;
 }
 
+.maintenance-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .maintenance-log-panel {
     background: linear-gradient(160deg, rgba(6, 10, 16, 0.97) 0%, rgba(10, 14, 20, 0.95) 100%);
     border: 1px solid var(--border-color);
@@ -2080,3 +2087,132 @@ a:hover .ext-link-icon {
 
 .ok-flag   span:last-child { color: var(--text-primary); }
 .warn-flag span:last-child { color: rgba(255, 200, 100, 0.9); }
+
+/* ============================================================
+   MUSIC PLAYER BUTTON
+   ============================================================ */
+.music-btn {
+    font-size: 0.72rem;
+    border-color: var(--accent-amber);
+    color: var(--accent-amber);
+}
+
+.music-btn:hover {
+    border-color: var(--accent-amber);
+    color: var(--bg-dark);
+    background: var(--accent-amber);
+}
+
+.music-btn.playing {
+    border-color: var(--accent-amber);
+    color: var(--accent-amber);
+    background: rgba(255, 159, 28, 0.08);
+    box-shadow: 0 0 8px rgba(255, 159, 28, 0.2);
+}
+
+/* ============================================================
+   AUDIO STATUS PANEL — below maintenance log
+   ============================================================ */
+.audio-status-panel {
+    margin-top: 12px;
+    background: rgba(10, 14, 20, 0.9);
+    border: 1px solid var(--border-color);
+    border-top: 2px solid var(--accent-cyan);
+    border-radius: 4px;
+    padding: 12px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.audio-status-header {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 2px;
+}
+
+.audio-status-rows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+}
+
+.audio-status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+.dot-green {
+    background: #22c55e;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.7);
+}
+
+.dot-amber {
+    background: var(--accent-amber);
+    box-shadow: 0 0 6px rgba(255, 159, 28, 0.6);
+}
+
+.dot-cyan {
+    background: var(--accent-cyan);
+    box-shadow: 0 0 6px rgba(0, 245, 212, 0.7);
+}
+
+.dot-off {
+    background: #1e293b;
+    box-shadow: none;
+}
+
+@keyframes dotPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(0, 245, 212, 0.7); }
+    50%       { opacity: 0.45; box-shadow: 0 0 2px rgba(0, 245, 212, 0.2); }
+}
+
+.pulse-dot {
+    animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.status-label {
+    font-size: 0.68rem;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    transition: color 0.3s;
+}
+
+/* Waveform canvas section */
+.waveform-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 4px;
+}
+
+.waveform-label {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--accent-cyan);
+    opacity: 0.55;
+    text-transform: uppercase;
+}
+
+.waveform-canvas {
+    width: 100%;
+    height: 120px;
+    display: block;
+    background: rgba(0, 245, 212, 0.03);
+    border: 1px solid rgba(0, 245, 212, 0.12);
+    border-radius: 2px;
+}
