@@ -15,3 +15,5 @@ View blueprint layouts of decks and structures of each deck with real photos fro
 Top, Front, Back and side to visualise ship layout and structures as well as hab modules.
 
 Simple fan project for anyone who want to build it or make own changes as they go along :)
+
+Note: Mp3 sine wave only works via Github and not from local file unless running local server (Cant double click)
