@@ -1191,29 +1191,38 @@ function switchBlueprint(deckNumber) {
 // ============================================================
 // ============================================================
 // ============================================================
-// MUSIC PLAYER
-// Main audio: HTML element with src in HTML — plays as always.
-// Waveform: second Audio() object, same src, muted, connected
-// to analyser via createMediaElementSource. Completely separate
-// from main player — cannot affect playback.
-// Both start/stop together on button click.
+// MUSIC PLAYER — Playlist + Pause/Resume + Live Waveform
+//
+// TO ADD MORE TRACKS: add entries to the TRACKS array below.
+// Each entry needs a 'file' (filename in assets/mp3/) and
+// a 'title' (display name shown in the track list).
 // ============================================================
 document.addEventListener('DOMContentLoaded', function () {
-    var btn   = document.getElementById('music-toggle');
-    var audio = document.getElementById('music-player');
+
+    // ---- TRACK LIST — edit here to add/remove tracks ----
+    var TRACKS = [
+        { file: 'ShatteredUnity.mp3', title: 'SHATTERED UNITY' },
+        { file: 'AngelStar.mp3',      title: 'ANGEL STAR'      }
+        // Add more tracks here, e.g.:
+        // { file: 'MyTrack.mp3', title: 'MY TRACK' },
+    ];
+    // -------------------------------------------------------
+
+    var btn        = document.getElementById('music-toggle');
+    var pauseBtn   = document.getElementById('music-pause');
+    var trackList  = document.getElementById('track-list');
+    var audio      = document.getElementById('music-player');
     if (!btn || !audio) return;
 
-    // Second audio object purely for the analyser — muted, no double sound
-    var vizAudio        = new Audio('assets/mp3/ShatteredUnity.mp3');
-    vizAudio.muted      = true;
-    vizAudio.preload    = 'none';
-    vizAudio.crossOrigin = 'anonymous';
+    var currentTrack = 0;
+    var playing      = false;
+    var paused       = false;
+    var raf          = null;
+    var actx         = null;
+    var analyser     = null;
+    var graphBuilt   = false;
 
-    // Wire analyser to the viz audio object
-    var actx     = null;
-    var analyser = null;
-    var graphBuilt = false;
-
+    // Build Web Audio graph once on first user click
     function buildGraph() {
         if (graphBuilt) return;
         graphBuilt = true;
@@ -1223,68 +1232,132 @@ document.addEventListener('DOMContentLoaded', function () {
             actx     = new AC();
             analyser = actx.createAnalyser();
             analyser.fftSize = 2048;
-            var src  = actx.createMediaElementSource(vizAudio);
+            var src  = actx.createMediaElementSource(audio);
             src.connect(analyser);
             analyser.connect(actx.destination);
         } catch(e) {
-            console.warn('Analyser graph failed:', e.message);
+            console.warn('Audio graph failed:', e.message);
             analyser = null;
         }
     }
 
-    var playing = false;
-    var raf     = null;
+    // Load a track by index and optionally start playing
+    function loadTrack(index, andPlay) {
+        currentTrack = index;
+        audio.src    = 'assets/mp3/' + TRACKS[index].file;
+        audio.load();
+        updateTrackListUI();
+        if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: TRACK LOADED — ' + TRACKS[index].title);
+        if (andPlay) {
+            audio.play().then(onPlayStarted).catch(function(e) {
+                console.error('play() failed:', e.name, e.message);
+            });
+        }
+    }
+
+    function onPlayStarted() {
+        playing = true;
+        paused  = false;
+        btn.classList.add('playing');
+        btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: PLAYING';
+        if (pauseBtn) { pauseBtn.disabled = false; pauseBtn.innerHTML = '<span class="audio-icon">&#9646;&#9646;</span> PAUSE'; }
+        if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC PLAYING — ' + TRACKS[currentTrack].title);
+        if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
+        startWave();
+    }
+
+    // Build track list UI
+    function buildTrackListUI() {
+        if (!trackList) return;
+        trackList.innerHTML = '';
+        TRACKS.forEach(function(track, i) {
+            var btn2 = document.createElement('button');
+            btn2.className   = 'track-btn';
+            btn2.id          = 'track-btn-' + i;
+            btn2.textContent = (i + 1) + '. ' + track.title;
+            btn2.addEventListener('click', function() {
+                stopWave();
+                paused  = false;
+                playing = false;
+                buildGraph();
+                if (actx && actx.state === 'suspended') actx.resume();
+                loadTrack(i, true);
+            });
+            trackList.appendChild(btn2);
+        });
+        updateTrackListUI();
+    }
+
+    function updateTrackListUI() {
+        TRACKS.forEach(function(_, i) {
+            var b = document.getElementById('track-btn-' + i);
+            if (!b) return;
+            b.classList.toggle('track-active', i === currentTrack && playing);
+        });
+    }
+
+    buildTrackListUI();
 
     audio.addEventListener('error', function () {
         var c = audio.error ? audio.error.code : '?';
         btn.innerHTML = '<span class="audio-icon">&#9888;</span> FILE ERR ' + c;
     });
 
-    btn.addEventListener('click', function () {
-        if (!playing) {
-            // Build graph on first click — user gesture allows AudioContext
-            buildGraph();
-            if (actx && actx.state === 'suspended') actx.resume();
+    // When a track ends, auto-advance to next
+    audio.addEventListener('ended', function () {
+        stopWave();
+        var next = (currentTrack + 1) % TRACKS.length;
+        if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: TRACK ENDED — ADVANCING TO ' + TRACKS[next].title);
+        loadTrack(next, true);
+    });
 
-            audio.currentTime = 0;
-            audio.play().then(function () {
-                playing = true;
-                btn.classList.add('playing');
-                btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: PLAYING';
-                if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC PLAYBACK STARTED');
-                if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
-                // Start viz audio in sync — muted so no double sound
-                vizAudio.currentTime = 0;
-                vizAudio.play().catch(function(){});
-                startWave();
-            }).catch(function (e) {
-                btn.innerHTML = '<span class="audio-icon">&#9888;</span> ' + e.name;
-                console.error('play() failed:', e.name, e.message);
-            });
-        } else {
+    // Main play/stop button (sidebar)
+    btn.addEventListener('click', function () {
+        buildGraph();
+        if (actx && actx.state === 'suspended') actx.resume();
+
+        if (!playing && !paused) {
+            // Fresh start
+            loadTrack(currentTrack, true);
+        } else if (playing) {
+            // Stop completely — reset to start of current track
             audio.pause();
             audio.currentTime = 0;
-            vizAudio.pause();
-            vizAudio.currentTime = 0;
             playing = false;
+            paused  = false;
             btn.classList.remove('playing');
             btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: OFFLINE';
+            if (pauseBtn) { pauseBtn.disabled = true; pauseBtn.innerHTML = '<span class="audio-icon">&#9646;&#9646;</span> PAUSE'; }
             if (window.logOperatorEvent) window.logOperatorEvent('warn', 'OPERATOR: MUSIC STOPPED');
             if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
             stopWave();
+        } else if (paused) {
+            // Resume from pause
+            audio.play().then(onPlayStarted).catch(function(e){ console.error(e); });
         }
     });
 
-    audio.addEventListener('ended', function () {
-        playing = false;
-        vizAudio.pause();
-        vizAudio.currentTime = 0;
-        btn.classList.remove('playing');
-        btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: OFFLINE';
-        if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC TRACK ENDED');
-        if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
-        stopWave();
-    });
+    // Pause/resume button (maintenance page)
+    if (pauseBtn) {
+        pauseBtn.addEventListener('click', function () {
+            if (!playing) return;
+            if (!paused) {
+                // Pause
+                audio.pause();
+                playing = false;
+                paused  = true;
+                btn.classList.remove('playing');
+                btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: PAUSED';
+                pauseBtn.innerHTML = '<span class="audio-icon">&#9654;</span> RESUME';
+                if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC PAUSED');
+                if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
+                stopWave();
+            } else {
+                // Resume
+                audio.play().then(onPlayStarted).catch(function(e){ console.error(e); });
+            }
+        });
+    }
 
     function startWave() {
         var canvas = document.getElementById('audio-waveform-canvas');

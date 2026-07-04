@@ -469,6 +469,17 @@
                             <div class="waveform-label">// LIVE MUSIC WAVEFORM</div>
                             <canvas id="audio-waveform-canvas" class="waveform-canvas"></canvas>
                         </div>
+                        <div class="music-controls">
+                            <button id="music-pause" class="audio-btn music-pause-btn" disabled>
+                                <span class="audio-icon">&#9646;&#9646;</span> PAUSE
+                            </button>
+                        </div>
+                        <div class="track-picker-wrapper">
+                            <div class="waveform-label">// TRACK SELECTION</div>
+                            <div class="track-list" id="track-list">
+                                <!-- JS populated -->
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -572,7 +583,7 @@
         <div class="lightbox-hint">// SCROLL TO ZOOM · DRAG TO PAN · ESC TO CLOSE</div>
     </div>
 
-    <audio id="music-player" src="assets/mp3/ShatteredUnity.mp3" preload="none"></audio>
+    <audio id="music-player" src="assets/mp3/ShatteredUnity.mp3" preload="none" crossorigin="anonymous"></audio>
     <script src="script.js" defer></script>
 </body>
 </html>
