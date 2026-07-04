@@ -1192,21 +1192,27 @@ function switchBlueprint(deckNumber) {
 // ============================================================
 // ============================================================
 // MUSIC PLAYER
-// crossorigin="anonymous" on the <audio> tag allows
-// createMediaElementSource to read audio data without CORS
-// zeroing the analyser. GitHub Pages serves with CORS headers
-// so this works. Build graph on first click (user gesture).
+// Main audio: HTML element with src in HTML — plays as always.
+// Waveform: second Audio() object, same src, muted, connected
+// to analyser via createMediaElementSource. Completely separate
+// from main player — cannot affect playback.
+// Both start/stop together on button click.
 // ============================================================
 document.addEventListener('DOMContentLoaded', function () {
     var btn   = document.getElementById('music-toggle');
     var audio = document.getElementById('music-player');
     if (!btn || !audio) return;
 
+    // Second audio object purely for the analyser — muted, no double sound
+    var vizAudio        = new Audio('assets/mp3/ShatteredUnity.mp3');
+    vizAudio.muted      = true;
+    vizAudio.preload    = 'none';
+    vizAudio.crossOrigin = 'anonymous';
+
+    // Wire analyser to the viz audio object
     var actx     = null;
     var analyser = null;
     var graphBuilt = false;
-    var playing  = false;
-    var raf      = null;
 
     function buildGraph() {
         if (graphBuilt) return;
@@ -1217,14 +1223,17 @@ document.addEventListener('DOMContentLoaded', function () {
             actx     = new AC();
             analyser = actx.createAnalyser();
             analyser.fftSize = 2048;
-            var src = actx.createMediaElementSource(audio);
+            var src  = actx.createMediaElementSource(vizAudio);
             src.connect(analyser);
             analyser.connect(actx.destination);
         } catch(e) {
-            console.warn('Audio graph failed:', e.message);
+            console.warn('Analyser graph failed:', e.message);
             analyser = null;
         }
     }
+
+    var playing = false;
+    var raf     = null;
 
     audio.addEventListener('error', function () {
         var c = audio.error ? audio.error.code : '?';
@@ -1233,8 +1242,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     btn.addEventListener('click', function () {
         if (!playing) {
+            // Build graph on first click — user gesture allows AudioContext
             buildGraph();
             if (actx && actx.state === 'suspended') actx.resume();
+
             audio.currentTime = 0;
             audio.play().then(function () {
                 playing = true;
@@ -1242,6 +1253,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: PLAYING';
                 if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC PLAYBACK STARTED');
                 if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
+                // Start viz audio in sync — muted so no double sound
+                vizAudio.currentTime = 0;
+                vizAudio.play().catch(function(){});
                 startWave();
             }).catch(function (e) {
                 btn.innerHTML = '<span class="audio-icon">&#9888;</span> ' + e.name;
@@ -1250,6 +1264,8 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             audio.pause();
             audio.currentTime = 0;
+            vizAudio.pause();
+            vizAudio.currentTime = 0;
             playing = false;
             btn.classList.remove('playing');
             btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: OFFLINE';
@@ -1261,6 +1277,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     audio.addEventListener('ended', function () {
         playing = false;
+        vizAudio.pause();
+        vizAudio.currentTime = 0;
         btn.classList.remove('playing');
         btn.innerHTML = '<span class="audio-icon">&#127925;</span> MUSIC: OFFLINE';
         if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC TRACK ENDED');
