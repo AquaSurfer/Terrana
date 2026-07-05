@@ -1340,8 +1340,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Pause/resume button (maintenance page)
     if (pauseBtn) {
         pauseBtn.addEventListener('click', function () {
-            if (!playing) return;
-            if (!paused) {
+            if (!playing && !paused) return;
+            if (playing && !paused) {
                 // Pause
                 audio.pause();
                 playing = false;
@@ -1352,8 +1352,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC PAUSED');
                 if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
                 stopWave();
-            } else {
+            } else if (paused) {
                 // Resume
+                if (actx && actx.state === 'suspended') actx.resume();
                 audio.play().then(onPlayStarted).catch(function(e){ console.error(e); });
             }
         });
@@ -1363,6 +1364,13 @@ document.addEventListener('DOMContentLoaded', function () {
         var canvas = document.getElementById('audio-waveform-canvas');
         if (!canvas) return;
         var ctx = canvas.getContext('2d');
+
+        function fmtTime(secs) {
+            var s = Math.floor(secs || 0);
+            var m = Math.floor(s / 60);
+            s = s % 60;
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
 
         function draw() {
             raf = requestAnimationFrame(draw);
@@ -1391,6 +1399,17 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             ctx.lineTo(W, H / 2);
             ctx.stroke();
+
+            // Time counter — drawn inside canvas bottom
+            var elapsed = fmtTime(audio.currentTime);
+            var total   = (audio.duration && !isNaN(audio.duration))
+                          ? fmtTime(audio.duration) : '--:--';
+            ctx.font      = '11px monospace';
+            ctx.fillStyle = 'rgba(0,245,212,0.7)';
+            ctx.textAlign = 'left';
+            ctx.fillText(elapsed, 8, H - 8);
+            ctx.textAlign = 'right';
+            ctx.fillText(total, W - 8, H - 8);
         }
         if (raf) cancelAnimationFrame(raf);
         draw();
