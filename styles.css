@@ -2370,13 +2370,13 @@ a:hover .ext-link-icon {
    GLOW PULSE — 100% INTEGRITY BARS + FULL VESSEL SPEC BARS
    ============================================================ */
 @keyframes bar-pulse {
-    0%, 100% { box-shadow: 0 0 4px rgba(0,245,212,0.35); }
-    50%       { box-shadow: 0 0 14px rgba(0,245,212,0.95); }
+    0%, 100% { opacity: 0.6; background: var(--accent-cyan); }
+    50%       { opacity: 1;   background: #ffffff; }
 }
 
 /* Maintenance page — integrity bars at 100% */
 .integrity-bar-fill.bar-full {
-    animation: bar-pulse 2.5s ease-in-out infinite;
+    animation: bar-pulse 2s ease-in-out infinite;
 }
 
 /* Vessel specs page — ship system bars at 12/12 */
