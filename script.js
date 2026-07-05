@@ -1255,6 +1255,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function updateNowPlaying(state) {
+        var el = document.getElementById('now-playing-label');
+        if (!el) return;
+        if (state === 'playing') {
+            el.textContent = '// COMMS TUNED TO: ' + TRACKS[currentTrack].title;
+            el.className = 'now-playing-label now-playing-active';
+        } else if (state === 'paused') {
+            el.textContent = '// COMMS STANDBY: ' + TRACKS[currentTrack].title;
+            el.className = 'now-playing-label now-playing-paused';
+        } else {
+            el.textContent = '// COMMS OFFLINE';
+            el.className = 'now-playing-label';
+        }
+    }
+
     function onPlayStarted() {
         playing = true;
         paused  = false;
@@ -1263,6 +1278,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (pauseBtn) { pauseBtn.disabled = false; pauseBtn.innerHTML = '<span class="audio-icon">&#9646;&#9646;</span> PAUSE'; }
         if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC PLAYING — ' + TRACKS[currentTrack].title);
         if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
+        updateNowPlaying('playing');
+        updateTrackListUI();
         startWave();
     }
 
@@ -1292,7 +1309,8 @@ document.addEventListener('DOMContentLoaded', function () {
         TRACKS.forEach(function(_, i) {
             var b = document.getElementById('track-btn-' + i);
             if (!b) return;
-            b.classList.toggle('track-active', i === currentTrack && playing);
+            // Highlight active track whether playing OR paused
+            b.classList.toggle('track-active', i === currentTrack && (playing || paused));
         });
     }
 
@@ -1319,8 +1337,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!playing && !paused) {
             // Fresh start
             loadTrack(currentTrack, true);
-        } else {
-            // Stop completely — whether playing or paused, reset to beginning
+        } else if (playing) {
+            // Stop completely — reset to start of current track
             audio.pause();
             audio.currentTime = 0;
             playing = false;
@@ -1330,6 +1348,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (pauseBtn) { pauseBtn.disabled = true; pauseBtn.innerHTML = '<span class="audio-icon">&#9646;&#9646;</span> PAUSE'; }
             if (window.logOperatorEvent) window.logOperatorEvent('warn', 'OPERATOR: MUSIC STOPPED');
             if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
+            updateNowPlaying('offline');
+            updateTrackListUI();
             stopWave();
         }
     });
@@ -1337,7 +1357,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Pause/Resume button (maintenance page)
     if (pauseBtn) {
         pauseBtn.addEventListener('click', function () {
-            if (!playing && !paused) return; // nothing loaded yet
+            if (!playing && !paused) return;
             if (playing) {
                 // Pause
                 audio.pause();
@@ -1348,6 +1368,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 pauseBtn.innerHTML = '<span class="audio-icon">&#9654;</span> RESUME';
                 if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: MUSIC PAUSED');
                 if (window.updateAudioStatusPanel) window.updateAudioStatusPanel();
+                updateNowPlaying('paused');
+                updateTrackListUI();
                 stopWave();
             } else if (paused) {
                 // Resume from exact position

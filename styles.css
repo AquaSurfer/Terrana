@@ -2281,3 +2281,26 @@ a:hover .ext-link-icon {
     background: rgba(0, 245, 212, 0.08);
     box-shadow: 0 0 8px rgba(0, 245, 212, 0.15);
 }
+
+/* ============================================================
+   NOW PLAYING LABEL
+   ============================================================ */
+.now-playing-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    padding: 6px 0;
+    border-top: 1px solid var(--border-color);
+    transition: color 0.3s ease;
+}
+
+.now-playing-active {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 8px rgba(0, 245, 212, 0.4);
+}
+
+.now-playing-paused {
+    color: var(--accent-amber);
+}
