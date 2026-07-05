@@ -2305,16 +2305,7 @@ a:hover .ext-link-icon {
     color: var(--accent-amber);
 }
 
-/* ============================================================
-   GLOW PULSE ON 100% INTEGRITY BARS
-   ============================================================ */
-@keyframes bar-pulse {
-    0%, 100% { box-shadow: 0 0 4px rgba(0,245,212,0.4); }
-    50%       { box-shadow: 0 0 12px rgba(0,245,212,0.9); }
-}
-.integrity-bar-fill[style="width:100%"] {
-    animation: bar-pulse 2.5s ease-in-out infinite;
-}
+
 
 /* ============================================================
    STARDATE DISPLAY
@@ -2373,4 +2364,26 @@ a:hover .ext-link-icon {
     display: inline;
     animation: track-play-pulse 1s ease-in-out infinite;
     color: var(--accent-cyan);
+}
+
+/* ============================================================
+   GLOW PULSE — 100% INTEGRITY BARS + FULL VESSEL SPEC BARS
+   ============================================================ */
+@keyframes bar-pulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(0,245,212,0.35); }
+    50%       { box-shadow: 0 0 14px rgba(0,245,212,0.95); }
+}
+
+/* Maintenance page — integrity bars at 100% */
+.integrity-bar-fill.bar-full {
+    animation: bar-pulse 2.5s ease-in-out infinite;
+}
+
+/* Vessel specs page — ship system bars at 12/12 */
+@keyframes seg-pulse {
+    0%, 100% { filter: drop-shadow(0 0 3px rgba(0,245,212,0.4)); }
+    50%       { filter: drop-shadow(0 0 10px rgba(0,245,212,1.0)); }
+}
+.bar-meter-track[data-bars="12"]::before {
+    animation: seg-pulse 2.5s ease-in-out infinite;
 }
