@@ -278,33 +278,41 @@ document.addEventListener("DOMContentLoaded", () => {
     // Calibrated: Reactor = 100% | Shields = 10000 MW
     // ============================================================
     function initializeHardwareCounters() {
-        const targetReactor = 100;
-        const targetShields = 10000;
+        try {
+            const reactorEl = document.getElementById('tick-reactor');
+            const shieldsEl = document.getElementById('tick-shields');
+            if (!reactorEl || !shieldsEl) return;
 
-        let currentReactor = 0;
-        let currentShields = 0;
+            const targetReactor = 100;
+            const targetShields = 10000;
 
-        const duration    = 1200;
-        const intervalTime = 20;
-        const steps        = duration / intervalTime;
-        const stepReactor  = targetReactor / steps;
-        const stepShields  = targetShields / steps;
+            let currentReactor = 0;
+            let currentShields = 0;
 
-        const counterTimer = setInterval(() => {
-            currentReactor += stepReactor;
-            currentShields += stepShields;
+            const duration    = 1200;
+            const intervalTime = 20;
+            const steps        = duration / intervalTime;
+            const stepReactor  = targetReactor / steps;
+            const stepShields  = targetShields / steps;
 
-            if (currentReactor >= targetReactor) {
-                document.getElementById('tick-reactor').textContent = targetReactor;
-                document.getElementById('tick-shields').textContent = targetShields;
-                clearInterval(counterTimer);
-                playSystemPulse(220, 0.15, 'triangle');
-            } else {
-                document.getElementById('tick-reactor').textContent = Math.floor(currentReactor);
-                document.getElementById('tick-shields').textContent = Math.floor(currentShields);
-                if (Math.random() > 0.7) playSystemPulse(80, 0.01, 'sine');
-            }
-        }, intervalTime);
+            const counterTimer = setInterval(() => {
+                currentReactor += stepReactor;
+                currentShields += stepShields;
+
+                if (currentReactor >= targetReactor) {
+                    reactorEl.textContent = targetReactor;
+                    shieldsEl.textContent = targetShields;
+                    clearInterval(counterTimer);
+                    playSystemPulse(220, 0.15, 'triangle');
+                } else {
+                    reactorEl.textContent = Math.floor(currentReactor);
+                    shieldsEl.textContent = Math.floor(currentShields);
+                    if (Math.random() > 0.7) playSystemPulse(80, 0.01, 'sine');
+                }
+            }, intervalTime);
+        } catch (e) {
+            console.warn('Hardware counter init failed:', e);
+        }
     }
 
     initializeHardwareCounters();
@@ -507,36 +515,39 @@ document.addEventListener("DOMContentLoaded", () => {
     // SYSTEM BARS — animate in on section load
     // ============================================================
     function animateSystemBarsIn() {
-        const tracks = document.querySelectorAll('.bar-meter-track');
-        const targets = {};
-        document.querySelectorAll('.power-static').forEach(stat => {
-            targets[stat.getAttribute('data-system')] = parseInt(stat.textContent, 10) || 0;
-        });
-
-        // First reset all to 0
-        tracks.forEach(t => {
-            t.setAttribute('data-bars', '0');
-            t.classList.remove('animate-in');
-        });
-
-        // Staggered animate in
-        let step = 0;
-        const totalSteps = 12;
-        const interval = setInterval(() => {
-            step++;
-            document.querySelectorAll('.system-col').forEach(col => {
-                const sys   = col.getAttribute('data-system');
-                const track = col.querySelector('.bar-meter-track');
-                if (!track || !sys) return;
-                const target = targets[sys] || 12;
-                if (step <= target) {
-                    track.setAttribute('data-bars', step.toString());
-                    track.classList.add('animate-in');
-                }
+        try {
+            const tracks = document.querySelectorAll('.bar-meter-track');
+            const targets = {};
+            document.querySelectorAll('.power-static').forEach(stat => {
+                const sys = stat.getAttribute('data-system');
+                if (sys) targets[sys] = parseInt(stat.textContent, 10) || 0;
             });
-            if (step % 3 === 0) playSystemPulse(100 + step * 10, 0.015, 'sine');
-            if (step >= totalSteps) clearInterval(interval);
-        }, 60);
+
+            tracks.forEach(t => {
+                t.setAttribute('data-bars', '0');
+                t.classList.remove('animate-in');
+            });
+
+            let step = 0;
+            const totalSteps = 12;
+            const interval = setInterval(() => {
+                step++;
+                document.querySelectorAll('.system-col').forEach(col => {
+                    const sys   = col.getAttribute('data-system');
+                    const track = col.querySelector('.bar-meter-track');
+                    if (!track || !sys) return;
+                    const target = targets[sys] || 12;
+                    if (step <= target) {
+                        track.setAttribute('data-bars', step.toString());
+                        track.classList.add('animate-in');
+                    }
+                });
+                if (step % 3 === 0) playSystemPulse(100 + step * 10, 0.015, 'sine');
+                if (step >= totalSteps) clearInterval(interval);
+            }, 60);
+        } catch (e) {
+            console.warn('System bar animation failed:', e);
+        }
     }
 
     let specsAnimated = false;
@@ -723,19 +734,23 @@ document.addEventListener("DOMContentLoaded", () => {
     function resetLbView() { lbScale = 1; lbTransX = 0; lbTransY = 0; applyLbTransform(); }
 
     function openLightbox(src, alt, labelText) {
-        playSystemPulse(150, 0.08, 'triangle');
-        lightboxImg.src = src;
-        lightboxImg.alt = alt || 'Enlarged Projection Matrix';
-        if (lightboxMiniImg) lightboxMiniImg.src = src;
-        if (lightboxProjLabel) lightboxProjLabel.textContent = labelText || '';
-        resetLbView();
-        lightbox.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        lightboxImg.onload = () => applyLbTransform();
+        try {
+            if (!lightbox || !lightboxImg || !src) return;
+            playSystemPulse(150, 0.08, 'triangle');
+            lightboxImg.src = src;
+            lightboxImg.alt = alt || 'Enlarged Projection Matrix';
+            if (lightboxMiniImg) lightboxMiniImg.src = src;
+            if (lightboxProjLabel) lightboxProjLabel.textContent = labelText || '';
+            resetLbView();
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            lightboxImg.onload = () => applyLbTransform();
 
-        // Log operator image inspection
-        if (labelText) {
-            window.logOperatorEvent('ok', `OPERATOR: OPENED PROJECTION VIEW — ${labelText}`);
+            if (labelText) {
+                window.logOperatorEvent('ok', `OPERATOR: OPENED PROJECTION VIEW — ${labelText}`);
+            }
+        } catch (e) {
+            console.warn('Lightbox open failed:', e);
         }
     }
 
@@ -751,9 +766,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function closeLightbox() {
         playSystemPulse(90, 0.06, 'sine');
-        lightbox.classList.remove('active');
+        cleanupLbDragListeners();
+        if (lightbox) lightbox.classList.remove('active');
         document.body.style.overflow = '';
         resetLbView();
+    }
+
+    // Lightbox drag listeners — attached only while dragging, removed on release/close
+    function onLbMouseMove(e) {
+        if (!lbDragging) return;
+        lbTransX = lbOriginX + (e.clientX - lbDragSX);
+        lbTransY = lbOriginY + (e.clientY - lbDragSY);
+        applyLbTransform();
+    }
+
+    function onLbMouseUp() {
+        if (!lbDragging) return;
+        lbDragging = false;
+        if (lightboxInner) lightboxInner.classList.remove('grabbing');
+        cleanupLbDragListeners();
+    }
+
+    function bindLbDragListeners() {
+        document.addEventListener('mousemove', onLbMouseMove);
+        document.addEventListener('mouseup', onLbMouseUp);
+    }
+
+    function cleanupLbDragListeners() {
+        lbDragging = false;
+        if (lightboxInner) lightboxInner.classList.remove('grabbing');
+        document.removeEventListener('mousemove', onLbMouseMove);
+        document.removeEventListener('mouseup', onLbMouseUp);
     }
 
     if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
@@ -763,12 +806,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    document.addEventListener('keydown', function (e) {
-        if (lightbox && lightbox.classList.contains('active')) {
-            if (e.key === 'Escape') closeLightbox();
-            if (e.key === '+' || e.key === '=') { lbScale = Math.min(LB_MAX, lbScale * 1.35); applyLbTransform(); }
-            if (e.key === '-') { lbScale = Math.max(LB_MIN, lbScale / 1.35); applyLbTransform(); }
-        }
+    document.addEventListener('keydown', function onLbKeyDown(e) {
+        if (!lightbox || !lightbox.classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === '+' || e.key === '=') { lbScale = Math.min(LB_MAX, lbScale * 1.35); applyLbTransform(); }
+        if (e.key === '-') { lbScale = Math.max(LB_MIN, lbScale / 1.35); applyLbTransform(); }
     });
 
     // Zoom buttons
@@ -791,17 +833,7 @@ document.addEventListener("DOMContentLoaded", () => {
             lbDragSX = e.clientX; lbDragSY = e.clientY;
             lbOriginX = lbTransX; lbOriginY = lbTransY;
             lightboxInner.classList.add('grabbing');
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!lbDragging) return;
-            lbTransX = lbOriginX + (e.clientX - lbDragSX);
-            lbTransY = lbOriginY + (e.clientY - lbDragSY);
-            applyLbTransform();
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (lbDragging) { lbDragging = false; lightboxInner.classList.remove('grabbing'); }
+            bindLbDragListeners();
         });
 
         // Touch support
@@ -1152,39 +1184,44 @@ function switchBlueprint(deckNumber) {
             osc.start();
             osc.stop(_bpAudioCtx.currentTime + 0.04);
         }
-    } catch (e) {}
 
-    document.querySelectorAll('.bp-tab').forEach((tab, index) => {
-        tab.classList.toggle('active', index === deckNumber - 1);
-    });
+        document.querySelectorAll('.bp-tab').forEach((tab, index) => {
+            tab.classList.toggle('active', index === deckNumber - 1);
+        });
 
-    const blueprintDisplay = document.getElementById('active-blueprint');
-    const minimapImg       = document.getElementById('minimap-img');
-    const newSrc           = `assets/Blueprints/Lvl${deckNumber}.png`;
+        const blueprintDisplay = document.getElementById('active-blueprint');
+        const minimapImg       = document.getElementById('minimap-img');
+        const newSrc           = `assets/Blueprints/Lvl${deckNumber}.png`;
 
-    if (blueprintDisplay) blueprintDisplay.src = newSrc;
-    if (minimapImg)       minimapImg.src = newSrc;
+        if (blueprintDisplay) {
+            blueprintDisplay.loading = 'lazy';
+            blueprintDisplay.src = newSrc;
+        }
+        if (minimapImg) {
+            minimapImg.loading = 'lazy';
+            minimapImg.src = newSrc;
+        }
 
-    const deckLabel = document.getElementById('active-deck-label');
-    if (deckLabel) {
-        deckLabel.textContent = `// ACTIVE: DECK ${deckNumber}`;
-    }
+        const deckLabel = document.getElementById('active-deck-label');
+        if (deckLabel) {
+            deckLabel.textContent = `// ACTIVE: DECK ${deckNumber}`;
+        }
 
-    // Log operator deck switch
-    if (window.logOperatorEvent) {
-        window.logOperatorEvent('ok', `OPERATOR: SWITCHED BLUEPRINT VIEW — DECK ${deckNumber}`);
-    }
+        if (window.logOperatorEvent) {
+            window.logOperatorEvent('ok', `OPERATOR: SWITCHED BLUEPRINT VIEW — DECK ${deckNumber}`);
+        }
 
-    // Reset pan/zoom on deck switch
-    const displayBox = document.getElementById('blueprint-display-box');
-    const bpImg = document.getElementById('active-blueprint');
-    if (bpImg) {
-        bpImg.style.transform = 'translate(0px, 0px) scale(1)';
-    }
-    const miniVp = document.getElementById('minimap-viewport');
-    if (miniVp) {
-        miniVp.style.width = '100%'; miniVp.style.height = '100%';
-        miniVp.style.left = '0'; miniVp.style.top = '0';
+        const bpImg = document.getElementById('active-blueprint');
+        if (bpImg) {
+            bpImg.style.transform = 'translate(0px, 0px) scale(1)';
+        }
+        const miniVp = document.getElementById('minimap-viewport');
+        if (miniVp) {
+            miniVp.style.width = '100%'; miniVp.style.height = '100%';
+            miniVp.style.left = '0'; miniVp.style.top = '0';
+        }
+    } catch (e) {
+        console.warn('Blueprint switch failed:', e);
     }
 }
 
@@ -1466,42 +1503,48 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 function updateBreakdownLayer() {
-    const selector = document.getElementById('lvl-select');
-    if (!selector) return;
+    try {
+        const selector = document.getElementById('lvl-select');
+        if (!selector) return;
 
-    const selectedLevel = selector.value;
-    const imgTop  = document.getElementById('view-top');
-    const imgPort = document.getElementById('view-port');
-    const imgAft  = document.getElementById('view-aft');
-    const imgFore = document.getElementById('view-fore');
+        const selectedLevel = selector.value;
+        const imgTop  = document.getElementById('view-top');
+        const imgPort = document.getElementById('view-port');
+        const imgAft  = document.getElementById('view-aft');
+        const imgFore = document.getElementById('view-fore');
 
-    const levelFolder = encodeURIComponent(`Level ${selectedLevel}`);
-    const allImgs     = [imgTop, imgPort, imgAft, imgFore];
+        const levelFolder = encodeURIComponent(`Level ${selectedLevel}`);
+        const allImgs     = [imgTop, imgPort, imgAft, imgFore];
 
-    allImgs.forEach(img => { if (img) img.classList.add('fading'); });
+        allImgs.forEach(img => { if (img) img.classList.add('fading'); });
 
-    setTimeout(() => {
-        if (imgTop)  imgTop.src  = `assets/${levelFolder}/Top${selectedLevel}.png`;
-        if (imgPort) imgPort.src = `assets/${levelFolder}/Port${selectedLevel}.png`;
-        if (imgAft)  imgAft.src  = `assets/${levelFolder}/Aft${selectedLevel}.png`;
-        if (imgFore) imgFore.src = `assets/${levelFolder}/Fore${selectedLevel}.png`;
+        setTimeout(() => {
+            try {
+                if (imgTop)  imgTop.src  = `assets/${levelFolder}/Top${selectedLevel}.png`;
+                if (imgPort) imgPort.src = `assets/${levelFolder}/Port${selectedLevel}.png`;
+                if (imgAft)  imgAft.src  = `assets/${levelFolder}/Aft${selectedLevel}.png`;
+                if (imgFore) imgFore.src = `assets/${levelFolder}/Fore${selectedLevel}.png`;
 
-        allImgs.forEach(img => { if (img) img.classList.remove('fading'); });
+                allImgs.forEach(img => { if (img) img.classList.remove('fading'); });
 
-        const labelTop  = document.getElementById('label-top');
-        const labelPort = document.getElementById('label-port');
-        const labelAft  = document.getElementById('label-aft');
-        const labelFore = document.getElementById('label-fore');
+                const labelTop  = document.getElementById('label-top');
+                const labelPort = document.getElementById('label-port');
+                const labelAft  = document.getElementById('label-aft');
+                const labelFore = document.getElementById('label-fore');
 
-        if (labelTop)  labelTop.textContent  = `TOP PROJECTION — LEVEL ${selectedLevel}`;
-        if (labelPort) labelPort.textContent = `PORT PROJECTION — LEVEL ${selectedLevel}`;
-        if (labelAft)  labelAft.textContent  = `AFT PROJECTION — LEVEL ${selectedLevel}`;
-        if (labelFore) labelFore.textContent = `FORE PROJECTION — LEVEL ${selectedLevel}`;
+                if (labelTop)  labelTop.textContent  = `TOP PROJECTION — LEVEL ${selectedLevel}`;
+                if (labelPort) labelPort.textContent = `PORT PROJECTION — LEVEL ${selectedLevel}`;
+                if (labelAft)  labelAft.textContent  = `AFT PROJECTION — LEVEL ${selectedLevel}`;
+                if (labelFore) labelFore.textContent = `FORE PROJECTION — LEVEL ${selectedLevel}`;
 
-        // Log operator level switch
-        if (window.logOperatorEvent) {
-            window.logOperatorEvent('ok', `OPERATOR: STRUCTURAL BREAKDOWN SWITCHED — LEVEL ${selectedLevel}`);
-        }
-
-    }, 260);
+                if (window.logOperatorEvent) {
+                    window.logOperatorEvent('ok', `OPERATOR: STRUCTURAL BREAKDOWN SWITCHED — LEVEL ${selectedLevel}`);
+                }
+            } catch (e) {
+                console.warn('Breakdown layer update failed:', e);
+            }
+        }, 260);
+    } catch (e) {
+        console.warn('Breakdown layer switch failed:', e);
+    }
 }
