@@ -113,12 +113,12 @@ document.addEventListener("DOMContentLoaded", () => {
             audioSystemEnabled = !audioSystemEnabled;
             if (audioSystemEnabled) {
                 audioBtn.classList.remove('muted');
-                audioBtn.innerHTML = `<span class="audio-icon">🔊</span> AUDIO: ENABLED`;
+                audioBtn.innerHTML = `<span class="audio-icon">🔊</span> AUDIO CLICK: ON`;
                 playSystemPulse(180, 0.04, 'sine');
                 if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: AUDIO FX ENABLED — SYSTEM SOUND ACTIVE');
             } else {
                 audioBtn.classList.add('muted');
-                audioBtn.innerHTML = `<span class="audio-icon">🔇</span> AUDIO: MUTED`;
+                audioBtn.innerHTML = `<span class="audio-icon">🔇</span> AUDIO CLICK: OFF`;
                 if (window.logOperatorEvent) window.logOperatorEvent('warn', 'OPERATOR: AUDIO FX MUTED — SYSTEM SOUND SUPPRESSED');
             }
             updateAudioStatusPanel();
@@ -1367,7 +1367,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var sdEl = document.getElementById('stardate-value');
         var stEl = document.getElementById('startime-value');
         if (sdEl) sdEl.textContent = sd + frac;
-        if (stEl) stEl.textContent = hh + ':' + mm + ':' + ss + ' GST';
+        if (stEl) stEl.textContent = hh + ':' + mm + ':' + ss + ' LT';
     }
     updateStardate();
     setInterval(updateStardate, 1000);
@@ -1453,6 +1453,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!canvas) return;
         var ctx = canvas.getContext('2d');
 
+        function fmtTime(secs) {
+            var s = Math.floor(secs || 0);
+            var m = Math.floor(s / 60);
+            s = s % 60;
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
         function draw() {
             raf = requestAnimationFrame(draw);
             var W = canvas.offsetWidth  || 600;
@@ -1480,6 +1487,17 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             ctx.lineTo(W, H / 2);
             ctx.stroke();
+
+            // Time counter — elapsed left, total right
+            var elapsed = fmtTime(audio.currentTime);
+            var total   = (audio.duration && !isNaN(audio.duration))
+                          ? fmtTime(audio.duration) : '--:--';
+            ctx.font      = '11px monospace';
+            ctx.fillStyle = 'rgba(0,245,212,0.75)';
+            ctx.textAlign = 'left';
+            ctx.fillText(elapsed, 8, H - 8);
+            ctx.textAlign = 'right';
+            ctx.fillText(total, W - 8, H - 8);
         }
         if (raf) cancelAnimationFrame(raf);
         draw();
