@@ -57,6 +57,12 @@
             <img src="assets/AngelStarrLOGO.png" class="sidebar-logo" alt="AngelStarr Logo">
         </div>
 
+        <div id="stardate-display" class="stardate-display">
+            <span class="stardate-label">// STARDATE</span>
+            <span id="stardate-value" class="stardate-value">-----.--</span>
+            <span id="startime-value" class="startime-value">--:--:-- GST</span>
+        </div>
+
         <div class="sidebar-footer">
             <button id="audio-toggle" class="audio-btn fx-audio-toggle">
                 <span class="audio-icon">🔊</span> AUDIO: ENABLED
@@ -82,6 +88,7 @@
                     </div>
                     <div class="cover-title">
                         <h1 class="glitch-title" data-text="TERRANA">TERRANA</h1>
+                        <p class="cover-flavour">// VESSEL TECHNICAL HANDBOOK — AUTHORISED ACCESS ONLY <span class="blink-cursor">_</span></p>
                         <p class="subtitle" id="cover-subtitle"></p>
                         <div class="cover-status-row">
                             <div class="classified-stamp">CLASSIFIED</div>
@@ -437,7 +444,7 @@
                     <div class="maintenance-log-panel">
                         <div class="maint-panel-header">
                             <span class="maint-header-title">// ACTIVE SYSTEM EVENT LOG</span>
-                            <span class="maint-header-status">FEED: <span class="cyan-text">LIVE<span class="blink-cursor">_</span></span></span>
+                            <span class="maint-header-status">FEED: <span class="cyan-text">LIVE<span class="blink-cursor">_</span></span> &nbsp;// UPTIME: <span id="uptime-counter" class="cyan-text">00:00:00</span></span>
                         </div>
                         <div class="maint-log-body" id="maint-log-body">
                             <!-- JS populated -->
@@ -469,12 +476,12 @@
                             <div class="waveform-label">// LIVE MUSIC WAVEFORM</div>
                             <canvas id="audio-waveform-canvas" class="waveform-canvas"></canvas>
                         </div>
+                        <div id="now-playing-label" class="now-playing-label">// COMMS OFFLINE</div>
                         <div class="music-controls">
                             <button id="music-pause" class="audio-btn music-pause-btn" disabled>
                                 <span class="audio-icon">&#9646;&#9646;</span> PAUSE
                             </button>
                         </div>
-                        <div id="now-playing-label" class="now-playing-label">// COMMS OFFLINE</div>
                     </div>
 
                 </div>
@@ -549,6 +556,14 @@
                             <div class="override-flag ok-flag">
                                 <span class="flag-dot flag-green"></span>
                                 <span>TACTICAL CHEAT TERMINAL — ARMED</span>
+                            </div>
+                            <div class="override-flag ok-flag">
+                                <span class="flag-dot flag-green"></span>
+                                <span>WEAPONS SAFETY LOCK — BYPASSED</span>
+                            </div>
+                            <div class="override-flag warn-flag">
+                                <span class="flag-dot flag-amber"></span>
+                                <span>JUMP DRIVE COOLDOWN — REDUCED</span>
                             </div>
                         </div>
                     </div>

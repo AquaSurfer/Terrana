@@ -2304,3 +2304,73 @@ a:hover .ext-link-icon {
 .now-playing-paused {
     color: var(--accent-amber);
 }
+
+/* ============================================================
+   GLOW PULSE ON 100% INTEGRITY BARS
+   ============================================================ */
+@keyframes bar-pulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(0,245,212,0.4); }
+    50%       { box-shadow: 0 0 12px rgba(0,245,212,0.9); }
+}
+.integrity-bar-fill[style="width:100%"] {
+    animation: bar-pulse 2.5s ease-in-out infinite;
+}
+
+/* ============================================================
+   STARDATE DISPLAY
+   ============================================================ */
+.stardate-display {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    background: rgba(0,245,212,0.03);
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+}
+.stardate-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+}
+.stardate-value {
+    font-size: 0.85rem;
+    color: var(--accent-cyan);
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+.startime-value {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+/* ============================================================
+   COVER FLAVOUR TEXT
+   ============================================================ */
+.cover-flavour {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    margin: 4px 0 0 0;
+    opacity: 0.75;
+}
+
+/* ============================================================
+   ANIMATED PLAY INDICATOR ON ACTIVE TRACK
+   ============================================================ */
+@keyframes track-play-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+}
+.track-btn .track-play-icon {
+    display: none;
+    margin-right: 5px;
+}
+.track-btn.track-active .track-play-icon {
+    display: inline;
+    animation: track-play-pulse 1s ease-in-out infinite;
+    color: var(--accent-cyan);
+}

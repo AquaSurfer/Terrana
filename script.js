@@ -1289,9 +1289,9 @@ document.addEventListener('DOMContentLoaded', function () {
         trackList.innerHTML = '';
         TRACKS.forEach(function(track, i) {
             var btn2 = document.createElement('button');
-            btn2.className   = 'track-btn';
-            btn2.id          = 'track-btn-' + i;
-            btn2.textContent = (i + 1) + '. ' + track.title;
+            btn2.className = 'track-btn';
+            btn2.id        = 'track-btn-' + i;
+            btn2.innerHTML = '<span class="track-play-icon">&#9654;</span>' + (i + 1) + '. ' + track.title;
             btn2.addEventListener('click', function() {
                 stopWave();
                 paused  = false;
@@ -1315,6 +1315,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     buildTrackListUI();
+
+    // ---- Stardate clock — updates every second ----
+    function updateStardate() {
+        var now  = new Date();
+        var year = now.getFullYear();
+        var start = new Date(year, 0, 0);
+        var day  = Math.floor((now - start) / 86400000);
+        var frac = ((now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400).toFixed(2).slice(1);
+        var sd   = (year - 2000) * 1000 + day;
+        var hh   = String(now.getHours()).padStart(2, '0');
+        var mm   = String(now.getMinutes()).padStart(2, '0');
+        var ss   = String(now.getSeconds()).padStart(2, '0');
+        var sdEl = document.getElementById('stardate-value');
+        var stEl = document.getElementById('startime-value');
+        if (sdEl) sdEl.textContent = sd + frac;
+        if (stEl) stEl.textContent = hh + ':' + mm + ':' + ss + ' GST';
+    }
+    updateStardate();
+    setInterval(updateStardate, 1000);
+
+    // ---- Uptime counter — counts from page load ----
+    var uptimeStart = Date.now();
+    function updateUptime() {
+        var el  = document.getElementById('uptime-counter');
+        if (!el) return;
+        var s   = Math.floor((Date.now() - uptimeStart) / 1000);
+        var h   = Math.floor(s / 3600);
+        var m   = Math.floor((s % 3600) / 60);
+        var sec = s % 60;
+        el.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+    }
+    setInterval(updateUptime, 1000);
 
     audio.addEventListener('error', function () {
         var c = audio.error ? audio.error.code : '?';
