@@ -13,7 +13,7 @@
 // Shown in the sidebar under the local time, and logged to
 // the browser console on load.
 // ============================================================
-const BUILD_STAMP = 'BUILD 2026-07-06.04';
+const BUILD_STAMP = 'BUILD 2026-07-06.05';
 
 document.addEventListener('DOMContentLoaded', function () {
     const stampEl = document.getElementById('build-stamp-value');
