@@ -446,8 +446,22 @@
                             <span class="maint-header-title">// ACTIVE SYSTEM EVENT LOG</span>
                             <span class="maint-header-status">FEED: <span class="cyan-text">LIVE<span class="blink-cursor">_</span></span> &nbsp;// UPTIME: <span id="uptime-counter" class="cyan-text">00:00:00</span></span>
                         </div>
-                        <div class="maint-log-body" id="maint-log-body">
-                            <!-- JS populated -->
+                        <div class="maint-panel-body-row">
+                            <div class="maint-log-body" id="maint-log-body">
+                                <!-- JS populated -->
+                            </div>
+
+                            <!-- LORE TERMINAL — CRT password-gated archive -->
+                            <div class="lore-terminal-column">
+                                <div class="lore-terminal-crt crt-effect" id="lore-terminal-crt">
+                                    <img class="lore-standby-logo" id="lore-standby-logo" src="assets/AngelStarrLOGO.png" alt="AngelStarr Systems">
+                                    <div class="lore-terminal-output" id="lore-terminal-output"></div>
+                                    <div class="lore-terminal-prompt" id="lore-terminal-prompt">
+                                        <span class="lore-prompt-caret">&gt;</span><span class="lore-input-text" id="lore-input-text"></span><span class="lore-block-cursor" id="lore-block-cursor"></span>
+                                    </div>
+                                </div>
+                                <div class="lore-log-buttons" id="lore-log-buttons"><!-- JS populated once unlocked --></div>
+                            </div>
                         </div>
                         <div class="maint-log-footer">
                             <span id="maint-entry-count" class="maint-entry-count">0 EVENTS LOGGED</span>

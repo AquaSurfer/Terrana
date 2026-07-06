@@ -1239,11 +1239,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---- TRACK LIST — edit here to add/remove tracks ----
     var TRACKS = [
         { file: 'ShatteredUnity.mp3', title: 'SHATTERED UNITY' },
-        { file: 'AngelStarr.mp3',      title: 'ANGELSTARR'      }
+        { file: 'AngelStarr.mp3',      title: 'ANGELSTARR', locked: true, loop: true }
         // Add more tracks here, e.g.:
         // { file: 'MyTrack.mp3', title: 'MY TRACK' },
     ];
     // -------------------------------------------------------
+    // ANGELSTARR track stays hidden from the selector — and can't be
+    // played — until the lore terminal password has been solved.
+    var loreUnlocked = false;
 
     var btn        = document.getElementById('music-toggle');
     var pauseBtn   = document.getElementById('music-pause');
@@ -1280,8 +1283,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Load a track by index and optionally start playing
     function loadTrack(index, andPlay) {
+        if (TRACKS[index].locked && !loreUnlocked) return; // gated until password solved
         currentTrack = index;
         audio.src    = 'assets/mp3/' + TRACKS[index].file;
+        audio.loop   = !!TRACKS[index].loop;
         audio.load();
         updateTrackListUI();
         if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: TRACK LOADED — ' + TRACKS[index].title);
@@ -1325,6 +1330,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!trackList) return;
         trackList.innerHTML = '';
         TRACKS.forEach(function(track, i) {
+            if (track.locked && !loreUnlocked) return; // hidden until password solved
             var btn2 = document.createElement('button');
             btn2.className = 'track-btn';
             btn2.id        = 'track-btn-' + i;
@@ -1350,6 +1356,33 @@ document.addEventListener('DOMContentLoaded', function () {
             b.classList.toggle('track-active', i === currentTrack && (playing || paused));
         });
     }
+
+    // Next unlocked track index after `from`, wrapping around and
+    // skipping any tracks still gated behind the lore terminal.
+    function nextUnlockedIndex(from) {
+        for (var step = 1; step <= TRACKS.length; step++) {
+            var i = (from + step) % TRACKS.length;
+            if (!TRACKS[i].locked || loreUnlocked) return i;
+        }
+        return from;
+    }
+
+    // Called by the lore terminal once "ANGELSTARR" has been entered
+    // correctly — reveals the track in the selector and starts it
+    // playing on an infinite loop.
+    window.unlockAngelStarrTrack = function () {
+        if (loreUnlocked) return;
+        loreUnlocked = true;
+        var idx = TRACKS.findIndex(function(t){ return t.file === 'AngelStarr.mp3'; });
+        buildTrackListUI();
+        stopWave();
+        paused  = false;
+        playing = false;
+        buildGraph();
+        if (actx && actx.state === 'suspended') actx.resume();
+        if (idx > -1) loadTrack(idx, true);
+        if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: LORE ARCHIVE UNLOCKED — ANGELSTARR TRACK DECRYPTED');
+    };
 
     buildTrackListUI();
 
@@ -1392,8 +1425,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // When a track ends, auto-advance to next
     audio.addEventListener('ended', function () {
+        // Tracks flagged loop:true (AngelStarr) never fire 'ended' —
+        // the native <audio loop> attribute handles that seamlessly.
         stopWave();
-        var next = (currentTrack + 1) % TRACKS.length;
+        var next = nextUnlockedIndex(currentTrack);
         if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: TRACK ENDED — ADVANCING TO ' + TRACKS[next].title);
         loadTrack(next, true);
     });
@@ -1566,3 +1601,205 @@ function updateBreakdownLayer() {
         console.warn('Breakdown layer switch failed:', e);
     }
 }
+// ============================================================
+// ============================================================
+// ============================================================
+// LORE TERMINAL — password-gated CRT archive (Section 05)
+//
+// Standby  : blinking cursor + "// ENTER AUTHORIZATION CODE"
+// Password : case-sensitive "ANGELSTARR", native keydown capture
+// Unlocked : reveals 4 log nodes + unlocks AngelStarr audio track
+// ============================================================
+document.addEventListener('DOMContentLoaded', function () {
+
+    var PASSWORD = 'ANGELSTARR';
+
+    var LOGS = [
+        {
+            id: 'LOG_01',
+            title: 'PROTOCOL L-RA',
+            text: 'Protocol L-RA\u2014the foundational architecture of all AngelStarr vessels\u2014was initiated by Chief Architect Richard T. AngelStarr (Aka Arty). These vessels were designed as closed-loop, self-sustaining ecosystems meant to preserve not just life, but identity. The ships are masterpieces of pre-Colony War engineering, anchored by emotional matrixes that define the vessel\u2019s personality as a faithful companion for the long dark.'
+        },
+        {
+            id: 'LOG_02',
+            title: 'THE GREAT SILENCE',
+            text: 'System Status: Error 404-N. The Great Silence has consumed the network. External comms are dead. The ships that were in transit during the final stages of the Colony War have been declared \u2018Marooned.\u2019 All AngelStarr assets are now drifting in the dead zones. Production of the fleet was halted instantaneously. They represent a tier of technology far beyond anything manufactured in the modern era, and they remain effectively irreplicable.'
+        },
+        {
+            id: 'LOG_03',
+            title: 'SENTINEL PERSISTENCE',
+            text: 'System Status: Immersive Loop Active. To protect the crew from the reality of the void, onboard AIs initiated a permanent \u2018Golden Hour\u2019 simulation. The hulls may be cold and dormant to the outside world, but within the mainframe, the AI maintains a perfect, loop-based paradise. The Ghost in the Machine is protective, and its primary directive remains the preservation of the \u2018Arty\u2019 persona.'
+        },
+        {
+            id: 'LOG_04',
+            title: 'SALVAGE PROTOCOL',
+            text: 'System Status: Warning - Hostile Environment. Full system override is technically possible but carries extreme risk. The core systems\u2014superior to any tech produced during or after the Colony War\u2014are classified as \u2018Lost Tech.\u2019 Note: The Ghost in the Machine is never fully purged. Even after a successful bridge override, the AI retains a sub-layer of consciousness. Expect persistent phantom static audio and localized system anomalies as the ship continues to process its original, loyal directives toward Arty.'
+        }
+    ];
+
+    var crtScreen    = document.getElementById('lore-terminal-crt');
+    var outputEl     = document.getElementById('lore-terminal-output');
+    var promptRow    = document.getElementById('lore-terminal-prompt');
+    var inputTextEl  = document.getElementById('lore-input-text');
+    var logoEl       = document.getElementById('lore-standby-logo');
+    var logButtonsEl = document.getElementById('lore-log-buttons');
+
+    if (!crtScreen || !outputEl) return; // section not present — bail safely
+
+    var unlocked     = false;
+    var streaming    = false;
+    var inputBuffer  = '';
+    var visitedLogs  = {};
+    var streamTimer  = null;
+
+    // Native-feeling terminal input — tabindex makes the CRT div itself
+    // focusable, so keydown is captured directly on it (no <input> tag).
+    crtScreen.setAttribute('tabindex', '0');
+    crtScreen.addEventListener('click', function () { crtScreen.focus(); });
+
+    function renderStandby() {
+        outputEl.innerHTML = '<div class="lore-line lore-line-muted">// ENTER AUTHORIZATION CODE</div>';
+    }
+    renderStandby();
+
+    function appendLine(text, cls) {
+        var line = document.createElement('div');
+        line.className = 'lore-line' + (cls ? ' ' + cls : '');
+        line.textContent = text;
+        outputEl.appendChild(line);
+        outputEl.scrollTop = outputEl.scrollHeight;
+        return line;
+    }
+
+    function renderInputLine() {
+        inputTextEl.textContent = inputBuffer;
+    }
+
+    crtScreen.addEventListener('keydown', function (e) {
+        if (unlocked || streaming) return; // password stage only
+
+        if (e.key === 'Backspace') {
+            inputBuffer = inputBuffer.slice(0, -1);
+            renderInputLine();
+            e.preventDefault();
+            return;
+        }
+        if (e.key === 'Enter') {
+            submitPassword();
+            e.preventDefault();
+            return;
+        }
+        // Printable single characters only — case-sensitive, so no
+        // auto-casing is applied; the user must type capitals themselves.
+        if (e.key.length === 1) {
+            if (inputBuffer.length < 24) {
+                inputBuffer += e.key;
+                renderInputLine();
+            }
+            e.preventDefault();
+        }
+    });
+
+    function submitPassword() {
+        if (inputBuffer === PASSWORD) {
+            accessGranted();
+        } else {
+            accessDenied();
+        }
+    }
+
+    function accessDenied() {
+        appendLine('// ACCESS DENIED - INVALID CREDENTIALS', 'lore-line-denied');
+        inputBuffer = '';
+        renderInputLine();
+        crtScreen.classList.remove('lore-shake');
+        void crtScreen.offsetWidth; // restart animation
+        crtScreen.classList.add('lore-shake');
+        if (window.logOperatorEvent) window.logOperatorEvent('warn', 'OPERATOR: LORE TERMINAL — INVALID AUTHORIZATION CODE');
+    }
+
+    function accessGranted() {
+        streaming = true;
+        appendLine('// ACCESS GRANTED', 'lore-line-granted');
+        promptRow.style.display = 'none';
+        crtScreen.classList.add('lore-flash');
+
+        // "Immediate screen refresh" — brief flash, then the screen
+        // clears and rebuilds into the unlocked lore-archive view.
+        setTimeout(function () {
+            crtScreen.classList.remove('lore-flash');
+            unlocked  = true;
+            streaming = false;
+            if (window.unlockAngelStarrTrack) window.unlockAngelStarrTrack();
+            showLogInterface();
+        }, 700);
+    }
+
+    function showLogInterface() {
+        if (logoEl) logoEl.style.opacity = '0';
+        outputEl.innerHTML = '';
+        appendLine('// LORE ARCHIVE UNLOCKED', 'lore-line-granted');
+        appendLine('// SELECT A LOG NODE TO DECRYPT', 'lore-line-muted');
+        buildLogButtons();
+    }
+
+    function buildLogButtons() {
+        if (!logButtonsEl) return;
+        logButtonsEl.innerHTML = '';
+        logButtonsEl.style.display = 'grid';
+        LOGS.forEach(function (log, i) {
+            var b = document.createElement('button');
+            b.className   = 'lore-log-btn';
+            b.id          = 'lore-log-btn-' + i;
+            b.textContent = log.id;
+            b.addEventListener('click', function () { streamLog(i); });
+            logButtonsEl.appendChild(b);
+        });
+    }
+
+    function streamLog(index) {
+        if (streaming) return;
+        streaming = true;
+        if (streamTimer) clearInterval(streamTimer);
+
+        var log     = LOGS[index];
+        var btn     = document.getElementById('lore-log-btn-' + index);
+        var firstVisit = !visitedLogs[index];
+        visitedLogs[index] = true;
+        if (btn) btn.classList.add('lore-log-visited');
+
+        outputEl.innerHTML =
+            '<div class="lore-line lore-line-title">// ' + log.id + ' \u2014 ' + log.title + ' \u2014 DECRYPTING...</div>' +
+            '<div class="lore-line lore-line-body" id="lore-stream-target"></div>';
+        var target = document.getElementById('lore-stream-target');
+
+        var chars = log.text.split('');
+        var idx   = 0;
+        streamTimer = setInterval(function () {
+            target.textContent += chars[idx];
+            idx++;
+            outputEl.scrollTop = outputEl.scrollHeight;
+            if (idx >= chars.length) {
+                clearInterval(streamTimer);
+                streamTimer = null;
+                streaming = false;
+                if (window.logOperatorEvent && firstVisit) {
+                    window.logOperatorEvent('ok', 'OPERATOR: LORE ARCHIVE \u2014 ' + log.id + ' DECRYPTED');
+                }
+                checkAllVisited();
+            }
+        }, 16);
+    }
+
+    function checkAllVisited() {
+        if (Object.keys(visitedLogs).length < LOGS.length) return;
+        setTimeout(function () {
+            crtScreen.classList.add('lore-red-pulse');
+            setTimeout(function () {
+                crtScreen.classList.remove('lore-red-pulse');
+                appendLine('[SYSTEM_SIGNAL: L-RA_LOOP_EXTENDED]', 'lore-line-signal');
+                if (window.logOperatorEvent) window.logOperatorEvent('warn', 'SYSTEM_SIGNAL: L-RA_LOOP_EXTENDED');
+            }, 900);
+        }, 400);
+    }
+});
