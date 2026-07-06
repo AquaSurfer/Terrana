@@ -8,6 +8,20 @@
 // ============================================================
 
 // ============================================================
+// BUILD STAMP — bump this on every deploy so it's easy to
+// confirm GitHub Pages is actually serving the latest version.
+// Shown in the sidebar under the local time, and logged to
+// the browser console on load.
+// ============================================================
+const BUILD_STAMP = 'BUILD 2026-07-06.03';
+
+document.addEventListener('DOMContentLoaded', function () {
+    const stampEl = document.getElementById('build-stamp-value');
+    if (stampEl) stampEl.textContent = BUILD_STAMP;
+    console.log('[TERRANA] ' + BUILD_STAMP);
+});
+
+// ============================================================
 // BOOT SEQUENCE (runs before DOMContentLoaded)
 // ============================================================
 (function () {

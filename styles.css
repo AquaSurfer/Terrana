@@ -2351,6 +2351,13 @@ a:hover .ext-link-icon {
     color: var(--text-secondary);
     letter-spacing: 1px;
 }
+.build-stamp-value {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    opacity: 0.55;
+    margin-top: 2px;
+}
 
 /* ============================================================
    COVER FLAVOUR TEXT
