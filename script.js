@@ -417,6 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         let entryCount = 0;
+        const MAX_LOG_ENTRIES = 50; // cap DOM rows during long sessions — trims oldest first
 
         function appendLogEntry(type, msg, animated) {
             const row = document.createElement('div');
@@ -438,6 +439,12 @@ document.addEventListener("DOMContentLoaded", () => {
             row.appendChild(badge);
             row.appendChild(text);
             logBody.appendChild(row);
+
+            // Trim oldest rows once we exceed the cap — keeps the DOM
+            // bounded during long sessions instead of growing forever.
+            while (logBody.children.length > MAX_LOG_ENTRIES) {
+                logBody.removeChild(logBody.firstChild);
+            }
 
             // Scroll to bottom
             logBody.scrollTop = logBody.scrollHeight;
