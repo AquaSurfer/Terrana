@@ -13,13 +13,91 @@
 // Shown in the sidebar under the local time, and logged to
 // the browser console on load.
 // ============================================================
-const BUILD_STAMP = 'BUILD 2026-07-06.03';
+const BUILD_STAMP = 'BUILD 2026-07-06.04';
 
 document.addEventListener('DOMContentLoaded', function () {
     const stampEl = document.getElementById('build-stamp-value');
     if (stampEl) stampEl.textContent = BUILD_STAMP;
     console.log('[TERRANA] ' + BUILD_STAMP);
 });
+
+// ============================================================
+// TELEMETRY SIGNAL LOST — universal broken-image fallback
+//
+// Applies to every <img> on the site (blueprints, projections,
+// cover render, logos, lightbox, lore terminal, etc). Any image
+// that fails to load is swapped for an in-universe placeholder
+// instead of the browser's default broken-image icon.
+//
+// Runs as an IIFE immediately at parse time (not gated behind
+// DOMContentLoaded) plus a startup sweep, because this file loads
+// with `defer` — by the time it executes, the browser has already
+// started requesting every <img> on the page, so a same-tick
+// failure could otherwise be missed by a listener attached later.
+// ============================================================
+(function () {
+    function buildFallbackSVG(label, w, h) {
+        w = Math.max(60, w || 240);
+        h = Math.max(40, h || 160);
+        var fontMain = Math.max(9, Math.min(w, h) * 0.09).toFixed(1);
+        var fontSub  = Math.max(7, Math.min(w, h) * 0.055).toFixed(1);
+        var safeLabel = String(label || 'ASSET').toUpperCase().replace(/[<>&"']/g, '');
+        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
+            '<rect width="100%" height="100%" fill="#060a08"/>' +
+            '<rect x="1" y="1" width="' + (w - 2) + '" height="' + (h - 2) + '" fill="none" stroke="#39ff6a" stroke-opacity="0.35"/>' +
+            '<line x1="0" y1="0" x2="' + w + '" y2="' + h + '" stroke="#39ff6a" stroke-opacity="0.08"/>' +
+            '<line x1="' + w + '" y1="0" x2="0" y2="' + h + '" stroke="#39ff6a" stroke-opacity="0.08"/>' +
+            '<text x="50%" y="46%" fill="#39ff6a" font-family="Courier New, monospace" font-size="' + fontMain + '" text-anchor="middle">// TELEMETRY SIGNAL LOST</text>' +
+            '<text x="50%" y="60%" fill="#39ff6a" fill-opacity="0.7" font-family="Courier New, monospace" font-size="' + fontSub + '" text-anchor="middle">' + safeLabel + ' FEED UNAVAILABLE</text>' +
+            '</svg>'
+        );
+    }
+
+    function isFallback(el) {
+        return !!(el.src && el.src.indexOf('data:image/svg+xml') === 0);
+    }
+
+    function handleBrokenImage(el) {
+        if (!el || el.tagName !== 'IMG' || isFallback(el)) return;
+        var label = (el.alt && el.alt.trim()) ? el.alt.trim() : (el.id || 'ASSET');
+        var w = parseInt(el.getAttribute('width'), 10)  || el.offsetWidth  || 240;
+        var h = parseInt(el.getAttribute('height'), 10) || el.offsetHeight || 160;
+        el.src = buildFallbackSVG(label, w, h);
+        el.classList.add('telemetry-lost');
+        if (window.logOperatorEvent) {
+            window.logOperatorEvent('warn', 'TELEMETRY: ASSET LOAD FAILURE — ' + label.toUpperCase());
+        }
+    }
+
+    // 'error' and 'load' don't bubble on media elements, so a capture-phase
+    // listener on document is the standard way to catch them globally
+    // without wiring an onerror handler onto every single <img> tag.
+    document.addEventListener('error', function (e) {
+        if (e.target && e.target.tagName === 'IMG') handleBrokenImage(e.target);
+    }, true);
+
+    document.addEventListener('load', function (e) {
+        var el = e.target;
+        if (el && el.tagName === 'IMG' && el.classList.contains('telemetry-lost') && !isFallback(el)) {
+            el.classList.remove('telemetry-lost'); // self-heals if a later, valid src loads (e.g. switching blueprint level)
+        }
+    }, true);
+
+    // Catch anything that already finished failing before this script ran
+    function sweepExistingImages() {
+        document.querySelectorAll('img').forEach(function (img) {
+            if (img.complete && img.naturalWidth === 0 && !isFallback(img)) {
+                handleBrokenImage(img);
+            }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', sweepExistingImages);
+    } else {
+        sweepExistingImages();
+    }
+})();
 
 // ============================================================
 // BOOT SEQUENCE (runs before DOMContentLoaded)
@@ -778,6 +856,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Bind zoomable assets
     zoomableAssets.forEach(asset => {
         asset.addEventListener('click', function () {
+            if (this.classList.contains('telemetry-lost')) return; // nothing to zoom into
             // Try to get projection label from parent view-card's first span
             const card = this.closest('.view-card');
             const label = card ? card.querySelector('span:first-child')?.textContent : '';

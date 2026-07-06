@@ -2571,3 +2571,15 @@ a:hover .ext-link-icon {
     .lore-terminal-column { flex: 1 1 auto; }
     .lore-terminal-crt { min-height: 220px; }
 }
+
+/* ============================================================
+   TELEMETRY SIGNAL LOST — broken-image placeholder state
+   Applied by script.js to any <img> that fails to load.
+   ============================================================ */
+.telemetry-lost {
+    cursor: default !important;
+}
+.telemetry-lost.zoomable-asset:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
