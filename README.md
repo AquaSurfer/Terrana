@@ -1,32 +1,45 @@
-Interactive Handbook for Starfield - Terrana ship.
+# Terrana — Interactive Ship Handbook
 
-It uses Index.html to launch in browser for interacting.
-It uses styles.css and script.js
-Rest are assetts of photos in folders for blueprints and decks along with cover photo.
+An interactive technical handbook for the Starfield ship **Terrana**, built as a browser-based, retro terminal-style experience.
 
-You can click the button to see the power bars go up to match ship specs.
-Click menu buttons with audible noise or switch off.
+## What it is
 
-Photos can be enlarged by clicking them.
+- `index.html` launches the handbook in your browser.
+- `styles.css` and `script.js` power the look and interactivity.
+- Everything else is project assets — blueprint photos, deck layouts, and the cover render, organized into folders.
 
-Credits page to mods used to achieve the ship.
+## Features
 
-View blueprint layouts of decks and structures of each deck with real photos from ship-builder edited to
-Top, Front, Back and side to visualise ship layout and structures as well as hab modules.
+- Click through to watch the power bars animate up to match the ship's specs.
+- Menu buttons play audible feedback, or can be switched off if you prefer it silent.
+- Click any blueprint or deck photo to enlarge it.
+- A dedicated Credits page lists the mods used to build the ship in-game.
+- Full blueprint layouts for every deck and structure — real in-game photos from the ship builder, edited into Top, Front, Back, and Side views to visualize the ship's layout, structure, and hab modules.
+- Hidden MP3 lore terminal — find the password, and it unlocks additional tracks and lore logs.
 
-Added in mp3s and lore terminal (if you can get the password).
+## Note on audio
 
-Support the Project
-If you find Terrana useful or enjoy the lore and technical implementation, please consider supporting the development. 
-Maintaining this repository and keeping the project infrastructure running requires time and resources.
+The MP3 waveform visualizer only works when the site is served over GitHub Pages (or any local server) — it won't work if you just double-click `index.html` to open it directly from a folder. If you want to run it locally, start a simple local server in the project folder first (e.g. `python3 -m http.server`) rather than opening the file directly.
 
-Your support helps keep this project independent and ad-free. 
+## Copyrighted & Protected Content
 
-You can contribute here (top) via github sponsor
-or
-https://buymeacoffee.com/aquasurf
+Everything in this repository is an original creative work and is protected under copyright law. **All Rights Reserved** — nothing here is open source or free to reuse, and no license is granted to copy, modify, redistribute, or re-host any part of this project.
 
-Thank you to everyone who has explored the codebase—your interest is the foundation of this project.
+This covers, specifically:
 
+- **Code** — `index.html`, `styles.css`, `script.js`, and all logic and structure they contain.
+- **Music** — all MP3 tracks, including hybrid/composite compositions, are original works.
+- **Lyrics** — any lyrics or in-universe lore text featured in the audio or the lore terminal.
+- **Images** — the cover render, all blueprint photos, deck layouts, logos, and every other visual asset.
 
-Note: Mp3 sine wave only works via Github and not from local file unless running local server (Cant double click)
+Cloning this repository, swapping out the images or branding, and re-uploading it as your own project is a copyright violation, not a gray area — and it applies whether or not a license file is present in the repo. Copyright protection exists automatically the moment original work is created; removing the `LICENSE` file doesn't open the project up, it simply removes any *permission* that file would otherwise have granted. Copies found elsewhere will be reported for takedown.
+
+If you'd like to use any part of this project — code, art, or audio — for your own work, reach out first. Attribution and permission requests are welcome; unauthorized copies are not.
+
+## Support the Project
+
+If you find Terrana useful, or enjoy the lore and technical implementation, please consider supporting its development. Maintaining this repository and keeping the project infrastructure running takes time and resources — your support helps keep this project independent and ad-free.
+
+You can contribute via [GitHub Sponsors](https://github.com/sponsors/AquaSurfer) or [Buy Me a Coffee](https://buymeacoffee.com/aquasurf).
+
+Thank you to everyone who has explored the codebase — your interest is the foundation of this project.
