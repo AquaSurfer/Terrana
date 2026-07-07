@@ -24,7 +24,7 @@
 // Shown in the sidebar under the local time, and logged to
 // the browser console on load.
 // ============================================================
-const BUILD_STAMP = 'BUILD 2026-07-06.07';
+const BUILD_STAMP = 'BUILD 2026-07-07.02';
 
 document.addEventListener('DOMContentLoaded', function () {
     const stampEl = document.getElementById('build-stamp-value');
@@ -1426,39 +1426,73 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (e) { /* library unavailable or unsupported file — default icon stays */ }
     }
 
-    // Estimates MP3 bitrate as (file size in bits) / (duration in seconds),
-    // snapped to the nearest common encoding rate for a clean readout.
-    // True bitrate isn't stored as a plain ID3 field, so this is the
-    // standard way media players approximate it without full decoding.
+    // Reads the TRUE encoded bitrate directly from the MP3's own frame
+    // header — not a file-size estimate. (File size ÷ duration would be
+    // thrown off by embedded album art sitting in the same file, which
+    // isn't part of the audio bitstream.) Skips past any ID3v2 tag
+    // first (using its declared size), then parses the first valid
+    // MPEG audio frame header it finds for the exact bitrate.
     var bitrateEl = document.getElementById('waveform-bitrate');
+    var MP3_BITRATE_TABLES = {
+        1: { // MPEG-1
+            1: [0,32,64,96,128,160,192,224,256,288,320,352,384,416,448],
+            2: [0,32,48,56,64,80,96,112,128,160,192,224,256,320,384],
+            3: [0,32,40,48,56,64,80,96,112,128,160,192,224,256,320]
+        },
+        2: { // MPEG-2 / MPEG-2.5 (same table for both)
+            1: [0,32,48,56,64,80,96,112,128,144,160,176,192,224,256],
+            2: [0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
+            3: [0,8,16,24,32,40,48,56,64,80,96,112,128,144,160]
+        }
+    };
+
+    function parseMp3FrameBitrate(bytes) {
+        for (var i = 0; i < bytes.length - 4; i++) {
+            if (bytes[i] !== 0xFF || (bytes[i + 1] & 0xE0) !== 0xE0) continue;
+            var b1 = bytes[i + 1], b2 = bytes[i + 2];
+            var versionBits = (b1 >> 3) & 0x03; // 00=MPEG2.5, 10=MPEG2, 11=MPEG1
+            var layerBits   = (b1 >> 1) & 0x03; // 01=LayerIII, 10=LayerII, 11=LayerI
+            if (versionBits === 1 || layerBits === 0) continue; // reserved — not a real header
+            var bitrateIndex = (b2 >> 4) & 0x0F;
+            var sampleIndex  = (b2 >> 2) & 0x03;
+            if (bitrateIndex === 0 || bitrateIndex === 15 || sampleIndex === 3) continue;
+
+            var versionGroup = versionBits === 3 ? 1 : 2; // MPEG1 table, or shared MPEG2/2.5 table
+            var layer = layerBits === 3 ? 1 : (layerBits === 2 ? 2 : 3);
+            var kbps = MP3_BITRATE_TABLES[versionGroup][layer][bitrateIndex];
+            if (kbps) return kbps;
+        }
+        return null;
+    }
+
     function updateBitrateDisplay() {
         if (!bitrateEl) return;
         bitrateEl.textContent = '// BITRATE: CALCULATING...';
         var url = audio.currentSrc || audio.src;
         if (!url) { bitrateEl.textContent = '// BITRATE: --'; return; }
 
-        function computeAndShow(bytes) {
-            if (!bytes || !audio.duration || !isFinite(audio.duration)) {
+        // Step 1: read just the ID3v2 header (10 bytes) to find its declared
+        // size, so we know where the actual audio frames start.
+        fetch(url, { headers: { Range: 'bytes=0-9' } })
+            .then(function (res) { return res.arrayBuffer(); })
+            .then(function (buf) {
+                var head = new Uint8Array(buf);
+                var tagSize = 0;
+                if (head.length >= 10 && head[0] === 0x49 && head[1] === 0x44 && head[2] === 0x33) { // "ID3"
+                    tagSize = 10 + (((head[6] & 0x7F) << 21) | ((head[7] & 0x7F) << 14) | ((head[8] & 0x7F) << 7) | (head[9] & 0x7F));
+                }
+                // Step 2: grab a small chunk right after the tag and scan it
+                // for the first valid MPEG audio frame header.
+                return fetch(url, { headers: { Range: 'bytes=' + tagSize + '-' + (tagSize + 4096) } });
+            })
+            .then(function (res) { return res.arrayBuffer(); })
+            .then(function (buf) {
+                var kbps = parseMp3FrameBitrate(new Uint8Array(buf));
+                bitrateEl.textContent = kbps ? ('// BITRATE: ' + kbps + ' KBPS') : '// BITRATE: N/A';
+            })
+            .catch(function () {
                 bitrateEl.textContent = '// BITRATE: N/A';
-                return;
-            }
-            var kbps = (bytes * 8) / audio.duration / 1000;
-            var common = [64, 96, 112, 128, 160, 192, 224, 256, 320];
-            var nearest = common.reduce(function (a, b) { return Math.abs(b - kbps) < Math.abs(a - kbps) ? b : a; });
-            bitrateEl.textContent = '// BITRATE: ~' + nearest + ' KBPS';
-        }
-
-        fetch(url, { method: 'HEAD' }).then(function (res) {
-            var len = res.headers.get('content-length');
-            var bytes = len ? parseInt(len, 10) : null;
-            if (audio.duration && isFinite(audio.duration)) {
-                computeAndShow(bytes);
-            } else {
-                audio.addEventListener('loadedmetadata', function () { computeAndShow(bytes); }, { once: true });
-            }
-        }).catch(function () {
-            bitrateEl.textContent = '// BITRATE: N/A';
-        });
+            });
     }
 
     // Load a track by index and optionally start playing
@@ -1832,7 +1866,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!crtScreen || !outputEl) return; // section not present — bail safely
 
-    var LORE_SESSION_KEY = 'terrana_lore_unlocked';
+    var LORE_SESSION_KEY   = 'terrana_lore_unlocked';
+    var LORE_VISITED_KEY   = 'terrana_lore_visited';
 
     var unlocked     = false;
     var streaming    = false;
@@ -1854,12 +1889,19 @@ document.addEventListener('DOMContentLoaded', function () {
     // boot sequence skip: survives a refresh, resets on a fresh tab/reload).
     if (sessionStorage.getItem(LORE_SESSION_KEY) === '1') {
         unlocked = true;
+        restoreVisitedLogs();
         if (logoEl) logoEl.style.opacity = '0';
         promptRow.style.display = 'none';
         outputEl.innerHTML = '';
         appendLine('// LORE ARCHIVE \u2014 SESSION VERIFIED', 'lore-line-granted');
         appendLine('// SELECT A LOG NODE TO DECRYPT', 'lore-line-muted');
         buildLogButtons();
+        // If every log was already decrypted in a previous visit this
+        // session, show the final signal immediately rather than making
+        // the user click through all four again just to see it.
+        if (Object.keys(visitedLogs).length >= LOGS.length) {
+            appendLine('[SYSTEM_SIGNAL: L-RA_LOOP_EXTENDED]', 'lore-line-signal');
+        }
         // Reveal the track in the selector but don't force playback —
         // browsers block audio autoplay without a fresh user gesture.
         if (window.unlockAngelStarrTrack) window.unlockAngelStarrTrack(false);
@@ -1949,6 +1991,18 @@ document.addEventListener('DOMContentLoaded', function () {
         buildLogButtons();
     }
 
+    function saveVisitedLogs() {
+        sessionStorage.setItem(LORE_VISITED_KEY, JSON.stringify(Object.keys(visitedLogs)));
+    }
+
+    function restoreVisitedLogs() {
+        try {
+            var raw = sessionStorage.getItem(LORE_VISITED_KEY);
+            if (!raw) return;
+            JSON.parse(raw).forEach(function (i) { visitedLogs[i] = true; });
+        } catch (e) { /* corrupt/old data — ignore, starts fresh */ }
+    }
+
     function buildLogButtons() {
         if (!logButtonsEl) return;
         logButtonsEl.innerHTML = '';
@@ -1958,6 +2012,7 @@ document.addEventListener('DOMContentLoaded', function () {
             b.className   = 'lore-log-btn';
             b.id          = 'lore-log-btn-' + i;
             b.textContent = log.id;
+            if (visitedLogs[i]) b.classList.add('lore-log-visited'); // restored from a previous visit this session
             b.addEventListener('click', function () { streamLog(i); });
             logButtonsEl.appendChild(b);
         });
@@ -1972,6 +2027,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var btn     = document.getElementById('lore-log-btn-' + index);
         var firstVisit = !visitedLogs[index];
         visitedLogs[index] = true;
+        saveVisitedLogs();
         if (btn) btn.classList.add('lore-log-visited');
 
         outputEl.innerHTML =
