@@ -20,8 +20,10 @@ Support the Project
 If you find Terrana useful or enjoy the lore and technical implementation, please consider supporting the development. 
 Maintaining this repository and keeping the project infrastructure running requires time and resources.
 
-Your support helps keep this project independent and ad-free. You can contribute here:
+Your support helps keep this project independent and ad-free. 
 
+You can contribute here (top) via github sponsor
+or
 https://buymeacoffee.com/aquasurf
 
 Thank you to everyone who has explored the codebase—your interest is the foundation of this project.
