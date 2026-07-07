@@ -14,6 +14,17 @@ Credits page to mods used to achieve the ship.
 View blueprint layouts of decks and structures of each deck with real photos from ship-builder edited to
 Top, Front, Back and side to visualise ship layout and structures as well as hab modules.
 
-Simple fan project for anyone who want to build it or make own changes as they go along :)
+Added in mp3s and lore terminal (if you can get the password).
+
+Support the Project
+If you find Terrana useful or enjoy the lore and technical implementation, please consider supporting the development. 
+Maintaining this repository and keeping the project infrastructure running requires time and resources.
+
+Your support helps keep this project independent and ad-free. You can contribute here:
+
+https://buymeacoffee.com/aquasurf
+
+Thank you to everyone who has explored the codebase—your interest is the foundation of this project.
+
 
 Note: Mp3 sine wave only works via Github and not from local file unless running local server (Cant double click)
