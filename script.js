@@ -1,3 +1,14 @@
+/*
+ * Copyright (C) 2026 G.R.Morris (aka Aquasurf/Aquasurfer)
+ * All Rights Reserved.
+ *
+ * This file is part of Terrana — a proprietary asset. The code,
+ * visuals, and audio that make up this project are exclusively
+ * licensed to their owner. No part of this file may be copied,
+ * modified, distributed, or re-hosted without prior written
+ * permission from the copyright holder.
+ */
+
 // ============================================================
 // TERRANA — CLASS C TECHNICAL MANUAL
 // script.js — Full Production Build (Patched + Enhanced)
@@ -13,7 +24,7 @@
 // Shown in the sidebar under the local time, and logged to
 // the browser console on load.
 // ============================================================
-const BUILD_STAMP = 'BUILD 2026-07-06.05';
+const BUILD_STAMP = 'BUILD 2026-07-06.07';
 
 document.addEventListener('DOMContentLoaded', function () {
     const stampEl = document.getElementById('build-stamp-value');
@@ -1339,13 +1350,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---- TRACK LIST — edit here to add/remove tracks ----
     var TRACKS = [
         { file: 'ShatteredUnity.mp3', title: 'SHATTERED UNITY' },
-        { file: 'AngelStarr.mp3',      title: 'ANGELSTARR', locked: true, loop: true }
+        { file: 'AngelStarr.mp3',      title: 'ANGELSTARR', locked: true }
         // Add more tracks here, e.g.:
         // { file: 'MyTrack.mp3', title: 'MY TRACK' },
     ];
     // -------------------------------------------------------
     // ANGELSTARR track stays hidden from the selector — and can't be
-    // played — until the lore terminal password has been solved.
+    // played — until the lore terminal password has been solved. Once
+    // unlocked it joins the normal playlist cycle (in TRACKS order,
+    // wrapping back to track 1 after the last track finishes) rather
+    // than looping in isolation.
     var loreUnlocked = false;
 
     var btn        = document.getElementById('music-toggle');
@@ -1381,14 +1395,81 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Default placeholder art (a small in-theme note icon) shown until
+    // real embedded album art is found — or permanently if a track has
+    // no embedded art at all. Never a "broken image" state.
+    var DEFAULT_ART = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28">' +
+        '<rect width="28" height="28" fill="#0a0f0d"/>' +
+        '<text x="50%" y="60%" font-size="14" fill="#39ff6a" text-anchor="middle" font-family="monospace">&#9834;</text>' +
+        '</svg>'
+    );
+
+    // Reads embedded ID3 album art from an MP3 (via the jsmediatags CDN
+    // library) and swaps it into the given <img>. Silently leaves the
+    // default note icon in place if the library isn't available, the
+    // file has no embedded art, or the read fails for any reason.
+    function loadAlbumArt(file, imgEl) {
+        if (!window.jsmediatags || !imgEl) return;
+        try {
+            window.jsmediatags.read('assets/mp3/' + file, {
+                onSuccess: function (tag) {
+                    var pic = tag && tag.tags && tag.tags.picture;
+                    if (!pic || !pic.data) return;
+                    var chunks = [];
+                    for (var i = 0; i < pic.data.length; i++) chunks.push(String.fromCharCode(pic.data[i]));
+                    imgEl.src = 'data:' + pic.format + ';base64,' + window.btoa(chunks.join(''));
+                    imgEl.classList.add('has-art');
+                },
+                onError: function () { /* no embedded art — default icon stays */ }
+            });
+        } catch (e) { /* library unavailable or unsupported file — default icon stays */ }
+    }
+
+    // Estimates MP3 bitrate as (file size in bits) / (duration in seconds),
+    // snapped to the nearest common encoding rate for a clean readout.
+    // True bitrate isn't stored as a plain ID3 field, so this is the
+    // standard way media players approximate it without full decoding.
+    var bitrateEl = document.getElementById('waveform-bitrate');
+    function updateBitrateDisplay() {
+        if (!bitrateEl) return;
+        bitrateEl.textContent = '// BITRATE: CALCULATING...';
+        var url = audio.currentSrc || audio.src;
+        if (!url) { bitrateEl.textContent = '// BITRATE: --'; return; }
+
+        function computeAndShow(bytes) {
+            if (!bytes || !audio.duration || !isFinite(audio.duration)) {
+                bitrateEl.textContent = '// BITRATE: N/A';
+                return;
+            }
+            var kbps = (bytes * 8) / audio.duration / 1000;
+            var common = [64, 96, 112, 128, 160, 192, 224, 256, 320];
+            var nearest = common.reduce(function (a, b) { return Math.abs(b - kbps) < Math.abs(a - kbps) ? b : a; });
+            bitrateEl.textContent = '// BITRATE: ~' + nearest + ' KBPS';
+        }
+
+        fetch(url, { method: 'HEAD' }).then(function (res) {
+            var len = res.headers.get('content-length');
+            var bytes = len ? parseInt(len, 10) : null;
+            if (audio.duration && isFinite(audio.duration)) {
+                computeAndShow(bytes);
+            } else {
+                audio.addEventListener('loadedmetadata', function () { computeAndShow(bytes); }, { once: true });
+            }
+        }).catch(function () {
+            bitrateEl.textContent = '// BITRATE: N/A';
+        });
+    }
+
     // Load a track by index and optionally start playing
     function loadTrack(index, andPlay) {
         if (TRACKS[index].locked && !loreUnlocked) return; // gated until password solved
         currentTrack = index;
         audio.src    = 'assets/mp3/' + TRACKS[index].file;
-        audio.loop   = !!TRACKS[index].loop;
+        audio.loop   = false; // every track cycles to the next via the 'ended' handler below
         audio.load();
         updateTrackListUI();
+        updateBitrateDisplay();
         if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: TRACK LOADED — ' + TRACKS[index].title);
         if (andPlay) {
             audio.play().then(onPlayStarted).catch(function(e) {
@@ -1434,7 +1515,8 @@ document.addEventListener('DOMContentLoaded', function () {
             var btn2 = document.createElement('button');
             btn2.className = 'track-btn';
             btn2.id        = 'track-btn-' + i;
-            btn2.innerHTML = '<span class="track-play-icon">&#9654;</span>' + (i + 1) + '. ' + track.title;
+            btn2.innerHTML = '<img class="track-album-art" id="track-art-' + i + '" src="' + DEFAULT_ART + '" alt="">' +
+                              '<span class="track-play-icon">&#9654;</span>' + (i + 1) + '. ' + track.title;
             btn2.addEventListener('click', function() {
                 stopWave();
                 paused  = false;
@@ -1444,6 +1526,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 loadTrack(i, true);
             });
             trackList.appendChild(btn2);
+            loadAlbumArt(track.file, document.getElementById('track-art-' + i));
         });
         updateTrackListUI();
     }
@@ -1468,19 +1551,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Called by the lore terminal once "ANGELSTARR" has been entered
-    // correctly — reveals the track in the selector and starts it
-    // playing on an infinite loop.
-    window.unlockAngelStarrTrack = function () {
+    // correctly (or restored from a previous unlock this session) —
+    // reveals the track in the selector. Pass autoplay=false to just
+    // reveal it without starting playback (used on session restore,
+    // since browsers block audio autoplay without a user gesture).
+    window.unlockAngelStarrTrack = function (autoplay) {
         if (loreUnlocked) return;
         loreUnlocked = true;
         var idx = TRACKS.findIndex(function(t){ return t.file === 'AngelStarr.mp3'; });
         buildTrackListUI();
-        stopWave();
-        paused  = false;
-        playing = false;
-        buildGraph();
-        if (actx && actx.state === 'suspended') actx.resume();
-        if (idx > -1) loadTrack(idx, true);
+        if (autoplay !== false) {
+            stopWave();
+            paused  = false;
+            playing = false;
+            buildGraph();
+            if (actx && actx.state === 'suspended') actx.resume();
+            if (idx > -1) loadTrack(idx, true);
+        }
         if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: LORE ARCHIVE UNLOCKED — ANGELSTARR TRACK DECRYPTED');
     };
 
@@ -1523,10 +1610,9 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.innerHTML = '<span class="audio-icon">&#9888;</span> FILE ERR ' + c;
     });
 
-    // When a track ends, auto-advance to next
+    // When a track ends, auto-advance to the next unlocked track in
+    // TRACKS order, wrapping back to track 1 after the last one.
     audio.addEventListener('ended', function () {
-        // Tracks flagged loop:true (AngelStarr) never fire 'ended' —
-        // the native <audio loop> attribute handles that seamlessly.
         stopWave();
         var next = nextUnlockedIndex(currentTrack);
         if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: TRACK ENDED — ADVANCING TO ' + TRACKS[next].title);
@@ -1746,6 +1832,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!crtScreen || !outputEl) return; // section not present — bail safely
 
+    var LORE_SESSION_KEY = 'terrana_lore_unlocked';
+
     var unlocked     = false;
     var streaming    = false;
     var inputBuffer  = '';
@@ -1760,7 +1848,24 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderStandby() {
         outputEl.innerHTML = '<div class="lore-line lore-line-muted">// ENTER AUTHORIZATION CODE</div>';
     }
-    renderStandby();
+
+    // Restore unlocked state if this password was already solved earlier
+    // in the same browser session (sessionStorage — same behavior as the
+    // boot sequence skip: survives a refresh, resets on a fresh tab/reload).
+    if (sessionStorage.getItem(LORE_SESSION_KEY) === '1') {
+        unlocked = true;
+        if (logoEl) logoEl.style.opacity = '0';
+        promptRow.style.display = 'none';
+        outputEl.innerHTML = '';
+        appendLine('// LORE ARCHIVE \u2014 SESSION VERIFIED', 'lore-line-granted');
+        appendLine('// SELECT A LOG NODE TO DECRYPT', 'lore-line-muted');
+        buildLogButtons();
+        // Reveal the track in the selector but don't force playback —
+        // browsers block audio autoplay without a fresh user gesture.
+        if (window.unlockAngelStarrTrack) window.unlockAngelStarrTrack(false);
+    } else {
+        renderStandby();
+    }
 
     function appendLine(text, cls) {
         var line = document.createElement('div');
@@ -1830,6 +1935,7 @@ document.addEventListener('DOMContentLoaded', function () {
             crtScreen.classList.remove('lore-flash');
             unlocked  = true;
             streaming = false;
+            sessionStorage.setItem(LORE_SESSION_KEY, '1');
             if (window.unlockAngelStarrTrack) window.unlockAngelStarrTrack();
             showLogInterface();
         }, 700);

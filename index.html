@@ -1,3 +1,13 @@
+<!--
+ Copyright (C) 2026 G.R.Morris (aka Aquasurf/Aquasurfer)
+ All Rights Reserved.
+
+ This file is part of Terrana — a proprietary asset. The code,
+ visuals, and audio that make up this project are exclusively
+ licensed to their owner. No part of this file may be copied,
+ modified, distributed, or re-hosted without prior written
+ permission from the copyright holder.
+-->
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
@@ -16,6 +26,11 @@
     <link rel="preload" as="image" href="assets/Level%201/Port1.png">
     <link rel="preload" as="image" href="assets/Level%201/Aft1.png">
     <link rel="preload" as="image" href="assets/Level%201/Fore1.png">
+
+    <!-- Reads embedded ID3 tags (album art) from the MP3 files for the
+         track selector. If this fails to load, script.js checks for
+         window.jsmediatags before using it, so playback is unaffected. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
 </head>
 <body>
 
@@ -59,6 +74,9 @@
             <button onclick="window.open('https://www.buymeacoffee.com/Aquasurf', '_blank');" class="paypal-btn">
                 // SUPPORT THIS PROJECT
             </button>
+            <div class="github-sponsor-wrap">
+                <iframe src="https://github.com/sponsors/AquaSurfer/button" title="Sponsor AquaSurfer" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+            </div>
         </div>
 
 
@@ -112,6 +130,7 @@
                             <p>&copy; 2026 AngelStarr Systems. All Rights Reserved. // Operations: Aquasurfer.</p>
                             <p>// PROPRIETARY ASSET: CODE, VISUALS, AND AUDIO ARE EXCLUSIVELY LICENSED.</p>
                             <p>// UNAUTHORISED DUPLICATION, DISTRIBUTION, OR RE-HOSTING IS STRICTLY PROHIBITED.</p>
+                            <p class="display-note">// OPTIMISED FOR 27" 4K DISPLAYS — RESPONSIVE LAYOUT SUPPORTED</p>
                         </div>
                     </div>
                 </div>
@@ -499,6 +518,7 @@
                         </div>
                         <div class="waveform-wrapper">
                             <div class="waveform-label">// LIVE MUSIC WAVEFORM</div>
+                            <div class="waveform-bitrate" id="waveform-bitrate">// BITRATE: --</div>
                             <canvas id="audio-waveform-canvas" class="waveform-canvas"></canvas>
                         </div>
                         <div id="now-playing-label" class="now-playing-label">// COMMS OFFLINE</div>

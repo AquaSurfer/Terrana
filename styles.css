@@ -1,3 +1,14 @@
+/*
+ * Copyright (C) 2026 G.R.Morris (aka Aquasurf/Aquasurfer)
+ * All Rights Reserved.
+ *
+ * This file is part of Terrana — a proprietary asset. The code,
+ * visuals, and audio that make up this project are exclusively
+ * licensed to their owner. No part of this file may be copied,
+ * modified, distributed, or re-hosted without prior written
+ * permission from the copyright holder.
+ */
+
 /* ============================================================
    TERRANA — CLASS C TECHNICAL MANUAL
    styles.css — Full Production Build
@@ -215,6 +226,12 @@ body {
 /* Support / PayPal button */
 .support-section {
     margin-top: -10px;
+}
+
+.github-sponsor-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
 }
 
 .paypal-btn {
@@ -496,6 +513,12 @@ body {
     color: var(--text-muted);
     line-height: 1.5;
     letter-spacing: 1px;
+}
+
+.cover-copyright-block .display-note {
+    margin-top: 6px;
+    opacity: 0.55;
+    font-size: 0.68rem;
 }
 
 /* Star particle field — subtle slow-drifting dots behind ship render */
@@ -2223,6 +2246,14 @@ a:hover .ext-link-icon {
     text-transform: uppercase;
 }
 
+.waveform-bitrate {
+    font-size: 0.56rem;
+    letter-spacing: 1.5px;
+    color: var(--accent-cyan);
+    opacity: 0.5;
+    text-transform: uppercase;
+}
+
 .waveform-canvas {
     width: 100%;
     height: 120px;
@@ -2282,6 +2313,24 @@ a:hover .ext-link-icon {
     text-align: left;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.track-album-art {
+    width: 22px;
+    height: 22px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 245, 212, 0.15);
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.track-album-art.has-art {
+    opacity: 1;
+    border-color: rgba(0, 245, 212, 0.35);
 }
 
 .track-btn:hover {
@@ -2582,4 +2631,95 @@ a:hover .ext-link-icon {
 .telemetry-lost.zoomable-asset:hover {
     transform: none !important;
     box-shadow: none !important;
+}
+
+/* ============================================================
+   RESPONSIVE LAYOUT — screen-size breakpoints
+   Base styles above are tuned for a standard desktop monitor.
+   These breakpoints adapt the fixed 300px-sidebar layout for
+   very large displays (4K+), laptops/tablets, and mobile.
+   ============================================================ */
+
+/* Large / 4K+ displays — cap content width so line lengths and
+   grids don't stretch uncomfortably wide; centre the extra space. */
+@media (min-width: 2200px) {
+    .content {
+        max-width: 1900px;
+        margin: 0 auto 0 300px;
+    }
+}
+
+/* Small laptop / tablet — shrink the sidebar and padding a touch,
+   nothing structural changes yet. */
+@media (max-width: 1200px) {
+    .sidebar {
+        width: 240px;
+        padding: 24px 16px;
+    }
+    .content {
+        margin-left: 240px;
+        width: calc(100vw - 240px);
+        padding: 32px;
+    }
+}
+
+/* Tablet / narrow window — tighten further. Section-specific
+   layouts (e.g. the maintenance lore terminal) have their own
+   stacking rules above at this same breakpoint. */
+@media (max-width: 900px) {
+    .sidebar {
+        width: 210px;
+        padding: 18px 14px;
+    }
+    .content {
+        margin-left: 210px;
+        width: calc(100vw - 210px);
+        padding: 24px;
+    }
+}
+
+/* Mobile — the fixed sidebar doesn't work at phone widths, so it
+   becomes a normal-flow top bar and the content takes full width
+   below it. This is a functional layout, not a full mobile-first
+   redesign — some desktop-oriented panels (blueprint pan/zoom,
+   wide status grids) will be usable but cosier than on desktop. */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        max-height: none;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        overflow: visible;
+        border-right: none;
+        border-bottom: 2px solid var(--border-color);
+    }
+    .nav-header-row { flex: 1 1 100%; }
+    .sidebar-logo-block { flex: 0 0 auto; }
+    .sidebar ul {
+        flex: 1 1 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 6px;
+    }
+    .sidebar ul li { flex: 1 1 46%; }
+    .sidebar a { font-size: 0.78rem; padding: 8px; }
+    .support-section,
+    .stardate-display,
+    .sidebar-footer {
+        flex: 1 1 100%;
+    }
+    .content {
+        margin-left: 0;
+        width: 100%;
+        padding: 18px;
+    }
 }
