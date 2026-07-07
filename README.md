@@ -14,8 +14,8 @@ An interactive technical handbook for the Starfield ship **Terrana**, built as a
 - Menu buttons play audible feedback, or can be switched off if you prefer it silent.
 - Click any blueprint or deck photo to enlarge it.
 - A dedicated Credits page lists the mods used to build the ship in-game.
-- Full blueprint layouts for every deck and structure — real in-game photos from the ship builder, edited into Top, Front, Back, and Side views to visualize the ship's layout, structure, and hab modules.
-- Hidden MP3 lore terminal — find the password, and it unlocks additional tracks and lore logs.
+- Full blueprint layouts for every deck and structure — real in-game photos from the ship builder, edited into Top, Fore, Aft, and Port views to visualize the ship's layout, structure, and hab modules.
+- Hidden MP3 lore terminal — find the password, and it unlocks additional track and lore logs.
 
 ## Note on audio
 
