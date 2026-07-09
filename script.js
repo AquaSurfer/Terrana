@@ -24,7 +24,7 @@
 // Shown in the sidebar under the local time, and logged to
 // the browser console on load.
 // ============================================================
-const BUILD_STAMP = 'BUILD 2026-07-07.02';
+const BUILD_STAMP = 'BUILD 2026-07-07.03';
 
 document.addEventListener('DOMContentLoaded', function () {
     const stampEl = document.getElementById('build-stamp-value');
@@ -674,7 +674,7 @@ document.addEventListener("DOMContentLoaded", () => {
         '#maintenance': 'MAINTENANCE & OVERRIDES — SECTION 05',
     };
 
-    // Exposed globally so switchBlueprint / updateBreakdownLayer can call it
+    // Exposed globally so switchBlueprint / switchBreakdownDeck / switchBreakdownProjection can call it
     window.logOperatorEvent = function(type, msg) {
         const logBody = document.getElementById('maint-log-body');
         const countEl = document.getElementById('maint-entry-count');
@@ -1069,171 +1069,185 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wpnCells[2]) wpnCells[2].setAttribute('data-tooltip', 'MSL ARRAY\nHeavy Payload Barrage\n825 Burst Damage');
 
     // ============================================================
-    // BLUEPRINT PAN & ZOOM ENGINE
+    // CONTAINED PAN & ZOOM ENGINE (reusable)
+    // Builds a self-contained pan/zoom/minimap controller scoped to
+    // one display box — the image never leaves its own frame, so
+    // this is unaffected by browser/OS display scaling (unlike a
+    // fullscreen lightbox). Used for both the blueprint viewer and
+    // the structural breakdown viewer below.
     // ============================================================
-    const displayBox  = document.getElementById('blueprint-display-box');
-    const bpImg       = document.getElementById('active-blueprint');
-    const minimapEl   = document.getElementById('blueprint-minimap');
-    const minimapImg  = document.getElementById('minimap-img');
-    const minimapVp   = document.getElementById('minimap-viewport');
-    const zoomInBtn   = document.getElementById('zoom-in-btn');
-    const zoomOutBtn  = document.getElementById('zoom-out-btn');
-    const zoomReset   = document.getElementById('zoom-reset-btn');
+    function createPanZoomViewer(cfg) {
+        const displayBox = document.getElementById(cfg.boxId);
+        const img        = document.getElementById(cfg.imgId);
+        const minimapImg = document.getElementById(cfg.minimapImgId);
+        const minimapVp  = document.getElementById(cfg.minimapVpId);
+        const zoomInBtn  = document.getElementById(cfg.zoomInId);
+        const zoomOutBtn = document.getElementById(cfg.zoomOutId);
+        const zoomReset  = document.getElementById(cfg.zoomResetId);
 
-    let bpScale  = 1;
-    let bpTransX = 0;
-    let bpTransY = 0;
-    let isDragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let dragOriginX = 0;
-    let dragOriginY = 0;
+        let scale  = 1;
+        let transX = 0;
+        let transY = 0;
+        let isDragging  = false;
+        let dragStartX  = 0;
+        let dragStartY  = 0;
+        let dragOriginX = 0;
+        let dragOriginY = 0;
 
-    const MIN_SCALE = 1;
-    const MAX_SCALE = 6;
+        const MIN_SCALE = 1;
+        const MAX_SCALE = 6;
 
-    function applyBpTransform() {
-        if (!bpImg || !displayBox) return;
+        function apply() {
+            if (!img || !displayBox) return;
+            const boxW = displayBox.clientWidth;
+            const boxH = displayBox.clientHeight;
+            const imgW = img.naturalWidth  * scale || boxW * scale;
+            const imgH = img.naturalHeight * scale || boxH * scale;
+            const maxX = Math.max(0, (imgW - boxW) / 2);
+            const maxY = Math.max(0, (imgH - boxH) / 2);
 
-        // Clamp translation so image doesn't leave the box
-        const boxW = displayBox.clientWidth;
-        const boxH = displayBox.clientHeight;
-        const imgW = bpImg.naturalWidth  * bpScale || boxW * bpScale;
-        const imgH = bpImg.naturalHeight * bpScale || boxH * bpScale;
-
-        const maxX = Math.max(0, (imgW - boxW) / 2);
-        const maxY = Math.max(0, (imgH - boxH) / 2);
-
-        if (bpScale <= 1) {
-            bpTransX = 0;
-            bpTransY = 0;
-        } else {
-            bpTransX = Math.max(-maxX, Math.min(maxX, bpTransX));
-            bpTransY = Math.max(-maxY, Math.min(maxY, bpTransY));
-        }
-
-        bpImg.style.transform = `translate(${bpTransX}px, ${bpTransY}px) scale(${bpScale})`;
-        bpImg.style.transformOrigin = 'center center';
-        updateMinimap();
-    }
-
-    function updateMinimap() {
-        if (!minimapVp || !bpImg) return;
-
-        if (bpScale <= 1.05) {
-            minimapVp.style.width  = '100%';
-            minimapVp.style.height = '100%';
-            minimapVp.style.left   = '0';
-            minimapVp.style.top    = '0';
-            return;
-        }
-
-        // Calculate viewport rect as fraction of total scaled image
-        const vpW = (1 / bpScale) * 100;
-        const vpH = (1 / bpScale) * 100;
-
-        // Centre position shifted by translation
-        const boxW = displayBox.clientWidth;
-        const boxH = displayBox.clientHeight;
-        const imgW = bpImg.naturalWidth  * bpScale || boxW * bpScale;
-        const imgH = bpImg.naturalHeight * bpScale || boxH * bpScale;
-
-        const offsetXFrac = 0.5 - (bpTransX / imgW);
-        const offsetYFrac = 0.5 - (bpTransY / imgH);
-
-        const left = Math.max(0, Math.min(100 - vpW, (offsetXFrac - vpW / 200) * 100));
-        const top  = Math.max(0, Math.min(100 - vpH, (offsetYFrac - vpH / 200) * 100));
-
-        minimapVp.style.width  = vpW  + '%';
-        minimapVp.style.height = vpH  + '%';
-        minimapVp.style.left   = left + '%';
-        minimapVp.style.top    = top  + '%';
-    }
-
-    function resetBpView() {
-        bpScale  = 1;
-        bpTransX = 0;
-        bpTransY = 0;
-        applyBpTransform();
-    }
-
-    if (zoomInBtn)  zoomInBtn.addEventListener('click',  (e) => { e.stopPropagation(); bpScale = Math.min(MAX_SCALE, bpScale * 1.35); applyBpTransform(); playSystemPulse(160, 0.03, 'sine'); });
-    if (zoomOutBtn) zoomOutBtn.addEventListener('click', (e) => { e.stopPropagation(); bpScale = Math.max(MIN_SCALE, bpScale / 1.35); applyBpTransform(); playSystemPulse(120, 0.03, 'sine'); });
-    if (zoomReset)  zoomReset.addEventListener('click',  (e) => { e.stopPropagation(); resetBpView(); playSystemPulse(100, 0.04, 'sine'); });
-
-    if (displayBox) {
-        // Mouse wheel zoom
-        displayBox.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const factor = e.deltaY < 0 ? 1.15 : 0.87;
-            bpScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, bpScale * factor));
-            applyBpTransform();
-        }, { passive: false });
-
-        // Drag to pan
-        displayBox.addEventListener('mousedown', (e) => {
-            if (bpScale <= 1) return;
-            isDragging = true;
-            dragStartX  = e.clientX;
-            dragStartY  = e.clientY;
-            dragOriginX = bpTransX;
-            dragOriginY = bpTransY;
-            displayBox.classList.add('grabbing');
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            bpTransX = dragOriginX + (e.clientX - dragStartX);
-            bpTransY = dragOriginY + (e.clientY - dragStartY);
-            applyBpTransform();
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                displayBox.classList.remove('grabbing');
+            if (scale <= 1) {
+                transX = 0;
+                transY = 0;
+            } else {
+                transX = Math.max(-maxX, Math.min(maxX, transX));
+                transY = Math.max(-maxY, Math.min(maxY, transY));
             }
-        });
 
-        // Touch support
-        let lastTouchDist = null;
-        displayBox.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                lastTouchDist = Math.hypot(dx, dy);
-            } else if (e.touches.length === 1 && bpScale > 1) {
+            img.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
+            img.style.transformOrigin = 'center center';
+            updateMinimap();
+        }
+
+        function updateMinimap() {
+            if (!minimapVp || !img) return;
+            if (scale <= 1.05) {
+                minimapVp.style.width  = '100%';
+                minimapVp.style.height = '100%';
+                minimapVp.style.left   = '0';
+                minimapVp.style.top    = '0';
+                return;
+            }
+            const vpW = (1 / scale) * 100;
+            const vpH = (1 / scale) * 100;
+            const boxW = displayBox.clientWidth;
+            const boxH = displayBox.clientHeight;
+            const imgW = img.naturalWidth  * scale || boxW * scale;
+            const imgH = img.naturalHeight * scale || boxH * scale;
+            const offsetXFrac = 0.5 - (transX / imgW);
+            const offsetYFrac = 0.5 - (transY / imgH);
+            const left = Math.max(0, Math.min(100 - vpW, (offsetXFrac - vpW / 200) * 100));
+            const top  = Math.max(0, Math.min(100 - vpH, (offsetYFrac - vpH / 200) * 100));
+            minimapVp.style.width  = vpW  + '%';
+            minimapVp.style.height = vpH  + '%';
+            minimapVp.style.left   = left + '%';
+            minimapVp.style.top    = top  + '%';
+        }
+
+        function reset() {
+            scale  = 1;
+            transX = 0;
+            transY = 0;
+            apply();
+        }
+
+        function setImage(src) {
+            if (img)  { img.loading = 'lazy';  img.src = src; }
+            if (minimapImg) { minimapImg.loading = 'lazy'; minimapImg.src = src; }
+            reset();
+        }
+
+        if (zoomInBtn)  zoomInBtn.addEventListener('click',  (e) => { e.stopPropagation(); scale = Math.min(MAX_SCALE, scale * 1.35); apply(); playSystemPulse(160, 0.03, 'sine'); });
+        if (zoomOutBtn) zoomOutBtn.addEventListener('click', (e) => { e.stopPropagation(); scale = Math.max(MIN_SCALE, scale / 1.35); apply(); playSystemPulse(120, 0.03, 'sine'); });
+        if (zoomReset)  zoomReset.addEventListener('click',  (e) => { e.stopPropagation(); reset(); playSystemPulse(100, 0.04, 'sine'); });
+
+        if (displayBox) {
+            displayBox.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const factor = e.deltaY < 0 ? 1.15 : 0.87;
+                scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * factor));
+                apply();
+            }, { passive: false });
+
+            displayBox.addEventListener('mousedown', (e) => {
+                if (scale <= 1) return;
                 isDragging  = true;
-                dragStartX  = e.touches[0].clientX;
-                dragStartY  = e.touches[0].clientY;
-                dragOriginX = bpTransX;
-                dragOriginY = bpTransY;
-            }
-        }, { passive: true });
+                dragStartX  = e.clientX;
+                dragStartY  = e.clientY;
+                dragOriginX = transX;
+                dragOriginY = transY;
+                displayBox.classList.add('grabbing');
+            });
 
-        displayBox.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const dist = Math.hypot(dx, dy);
-                if (lastTouchDist) {
-                    const factor = dist / lastTouchDist;
-                    bpScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, bpScale * factor));
-                    applyBpTransform();
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                transX = dragOriginX + (e.clientX - dragStartX);
+                transY = dragOriginY + (e.clientY - dragStartY);
+                apply();
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    displayBox.classList.remove('grabbing');
                 }
-                lastTouchDist = dist;
-            } else if (isDragging && e.touches.length === 1) {
-                bpTransX = dragOriginX + (e.touches[0].clientX - dragStartX);
-                bpTransY = dragOriginY + (e.touches[0].clientY - dragStartY);
-                applyBpTransform();
-            }
-        }, { passive: true });
+            });
 
-        displayBox.addEventListener('touchend', () => {
-            lastTouchDist = null;
-            isDragging = false;
-        });
+            let lastTouchDist = null;
+            displayBox.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    lastTouchDist = Math.hypot(dx, dy);
+                } else if (e.touches.length === 1 && scale > 1) {
+                    isDragging  = true;
+                    dragStartX  = e.touches[0].clientX;
+                    dragStartY  = e.touches[0].clientY;
+                    dragOriginX = transX;
+                    dragOriginY = transY;
+                }
+            }, { passive: true });
+
+            displayBox.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const dist = Math.hypot(dx, dy);
+                    if (lastTouchDist) {
+                        const factor = dist / lastTouchDist;
+                        scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * factor));
+                        apply();
+                    }
+                    lastTouchDist = dist;
+                } else if (isDragging && e.touches.length === 1) {
+                    transX = dragOriginX + (e.touches[0].clientX - dragStartX);
+                    transY = dragOriginY + (e.touches[0].clientY - dragStartY);
+                    apply();
+                }
+            }, { passive: true });
+
+            displayBox.addEventListener('touchend', () => {
+                lastTouchDist = null;
+                isDragging = false;
+            });
+        }
+
+        return { setImage: setImage, reset: reset };
     }
+
+    // Blueprint viewer (Section 02 — LEGEND + DECK 1-5 tabs)
+    window._blueprintViewer = createPanZoomViewer({
+        boxId: 'blueprint-display-box', imgId: 'active-blueprint',
+        minimapImgId: 'minimap-img', minimapVpId: 'minimap-viewport',
+        zoomInId: 'zoom-in-btn', zoomOutId: 'zoom-out-btn', zoomResetId: 'zoom-reset-btn'
+    });
+
+    // Structural breakdown viewer (Section 03 — DECK + projection tabs)
+    window._breakdownViewer = createPanZoomViewer({
+        boxId: 'breakdown-display-box', imgId: 'active-breakdown-img',
+        minimapImgId: 'breakdown-minimap-img', minimapVpId: 'breakdown-minimap-viewport',
+        zoomInId: 'bd-zoom-in-btn', zoomOutId: 'bd-zoom-out-btn', zoomResetId: 'bd-zoom-reset-btn'
+    });
 
     // ============================================================
     // AUDIO STATUS PANEL — updates the maintenance page indicators
@@ -1277,7 +1291,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ============================================================
 let _bpAudioCtx = null;
 
-function switchBlueprint(deckNumber) {
+function switchBlueprint(tabIndex, deckValue) {
     try {
         if (!_bpAudioCtx || _bpAudioCtx.state === 'closed') {
             const AC = window.AudioContext || window.webkitAudioContext;
@@ -1297,39 +1311,28 @@ function switchBlueprint(deckNumber) {
         }
 
         document.querySelectorAll('.bp-tab').forEach((tab, index) => {
-            tab.classList.toggle('active', index === deckNumber - 1);
+            tab.classList.toggle('active', index === tabIndex);
         });
 
-        const blueprintDisplay = document.getElementById('active-blueprint');
-        const minimapImg       = document.getElementById('minimap-img');
-        const newSrc           = `assets/Blueprints/Lvl${deckNumber}.png`;
+        const isLegend = deckValue === 'legend';
+        const newSrc = isLegend ? 'assets/Blueprints/Legend.png' : `assets/Blueprints/Lvl${deckValue}.png`;
 
-        if (blueprintDisplay) {
-            blueprintDisplay.loading = 'lazy';
-            blueprintDisplay.src = newSrc;
-        }
-        if (minimapImg) {
-            minimapImg.loading = 'lazy';
-            minimapImg.src = newSrc;
+        if (window._blueprintViewer) {
+            window._blueprintViewer.setImage(newSrc);
+        } else {
+            const blueprintDisplay = document.getElementById('active-blueprint');
+            const minimapImg       = document.getElementById('minimap-img');
+            if (blueprintDisplay) { blueprintDisplay.loading = 'lazy'; blueprintDisplay.src = newSrc; }
+            if (minimapImg)       { minimapImg.loading = 'lazy'; minimapImg.src = newSrc; }
         }
 
         const deckLabel = document.getElementById('active-deck-label');
         if (deckLabel) {
-            deckLabel.textContent = `// ACTIVE: DECK ${deckNumber}`;
+            deckLabel.textContent = isLegend ? '// ACTIVE: LEGEND' : `// ACTIVE: DECK ${deckValue}`;
         }
 
         if (window.logOperatorEvent) {
-            window.logOperatorEvent('ok', `OPERATOR: SWITCHED BLUEPRINT VIEW — DECK ${deckNumber}`);
-        }
-
-        const bpImg = document.getElementById('active-blueprint');
-        if (bpImg) {
-            bpImg.style.transform = 'translate(0px, 0px) scale(1)';
-        }
-        const miniVp = document.getElementById('minimap-viewport');
-        if (miniVp) {
-            miniVp.style.width = '100%'; miniVp.style.height = '100%';
-            miniVp.style.left = '0'; miniVp.style.top = '0';
+            window.logOperatorEvent('ok', isLegend ? 'OPERATOR: VIEWING LEGEND & KEY MATRIX' : `OPERATOR: SWITCHED BLUEPRINT VIEW — DECK ${deckValue}`);
         }
     } catch (e) {
         console.warn('Blueprint switch failed:', e);
@@ -1410,20 +1413,31 @@ document.addEventListener('DOMContentLoaded', function () {
     // default note icon in place if the library isn't available, the
     // file has no embedded art, or the read fails for any reason.
     function loadAlbumArt(file, imgEl) {
-        if (!window.jsmediatags || !imgEl) return;
+        if (!imgEl) return;
+        if (!window.jsmediatags) {
+            console.warn('[album-art] jsmediatags did not load — check that assets/js/jsmediatags.min.js exists and loaded without a 404 (see Network tab).');
+            return;
+        }
         try {
             window.jsmediatags.read('assets/mp3/' + file, {
                 onSuccess: function (tag) {
                     var pic = tag && tag.tags && tag.tags.picture;
-                    if (!pic || !pic.data) return;
+                    if (!pic || !pic.data) {
+                        console.warn('[album-art] ' + file + ' — read succeeded but no embedded picture tag found.');
+                        return;
+                    }
                     var chunks = [];
                     for (var i = 0; i < pic.data.length; i++) chunks.push(String.fromCharCode(pic.data[i]));
                     imgEl.src = 'data:' + pic.format + ';base64,' + window.btoa(chunks.join(''));
                     imgEl.classList.add('has-art');
                 },
-                onError: function () { /* no embedded art — default icon stays */ }
+                onError: function (error) {
+                    console.warn('[album-art] ' + file + ' — jsmediatags onError:', error);
+                }
             });
-        } catch (e) { /* library unavailable or unsupported file — default icon stays */ }
+        } catch (e) {
+            console.warn('[album-art] ' + file + ' — exception calling jsmediatags:', e.message);
+        }
     }
 
     // Reads the TRUE encoded bitrate directly from the MP3's own frame
@@ -1504,6 +1518,7 @@ document.addEventListener('DOMContentLoaded', function () {
         audio.load();
         updateTrackListUI();
         updateBitrateDisplay();
+        updateNowPlayingArt(index);
         if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: TRACK LOADED — ' + TRACKS[index].title);
         if (andPlay) {
             audio.play().then(onPlayStarted).catch(function(e) {
@@ -1511,6 +1526,18 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
+
+    // Mirrors the current track's art into the square window beside the
+    // waveform (separate <img> from the track-list thumbnail, same source).
+    var nowPlayingArtEl = document.getElementById('now-playing-art');
+    if (nowPlayingArtEl) nowPlayingArtEl.src = DEFAULT_ART;
+    function updateNowPlayingArt(index) {
+        if (!nowPlayingArtEl) return;
+        nowPlayingArtEl.src = DEFAULT_ART;
+        nowPlayingArtEl.classList.remove('has-art');
+        loadAlbumArt(TRACKS[index].file, nowPlayingArtEl);
+    }
+
 
     function updateNowPlaying(state) {
         var el = document.getElementById('now-playing-label');
@@ -1775,51 +1802,51 @@ document.addEventListener('DOMContentLoaded', function () {
         ctx.stroke();
     }
 });
-function updateBreakdownLayer() {
+// ============================================================
+// STRUCTURAL BREAKDOWN — DECK & PROJECTION SWITCHER
+// Same contained pan/zoom pattern as the blueprint viewer (no
+// fullscreen lightbox), so it isn't affected by OS/browser zoom.
+// ============================================================
+var _bdDeck = 1;
+var _bdProjection = 'Top';
+
+function switchBreakdownDeck(deckNumber) {
     try {
-        const selector = document.getElementById('lvl-select');
-        if (!selector) return;
-
-        const selectedLevel = selector.value;
-        const imgTop  = document.getElementById('view-top');
-        const imgPort = document.getElementById('view-port');
-        const imgAft  = document.getElementById('view-aft');
-        const imgFore = document.getElementById('view-fore');
-
-        const levelFolder = encodeURIComponent(`Level ${selectedLevel}`);
-        const allImgs     = [imgTop, imgPort, imgAft, imgFore];
-
-        allImgs.forEach(img => { if (img) img.classList.add('fading'); });
-
-        setTimeout(() => {
-            try {
-                if (imgTop)  imgTop.src  = `assets/${levelFolder}/Top${selectedLevel}.png`;
-                if (imgPort) imgPort.src = `assets/${levelFolder}/Port${selectedLevel}.png`;
-                if (imgAft)  imgAft.src  = `assets/${levelFolder}/Aft${selectedLevel}.png`;
-                if (imgFore) imgFore.src = `assets/${levelFolder}/Fore${selectedLevel}.png`;
-
-                allImgs.forEach(img => { if (img) img.classList.remove('fading'); });
-
-                const labelTop  = document.getElementById('label-top');
-                const labelPort = document.getElementById('label-port');
-                const labelAft  = document.getElementById('label-aft');
-                const labelFore = document.getElementById('label-fore');
-
-                if (labelTop)  labelTop.textContent  = `TOP PROJECTION — LEVEL ${selectedLevel}`;
-                if (labelPort) labelPort.textContent = `PORT PROJECTION — LEVEL ${selectedLevel}`;
-                if (labelAft)  labelAft.textContent  = `AFT PROJECTION — LEVEL ${selectedLevel}`;
-                if (labelFore) labelFore.textContent = `FORE PROJECTION — LEVEL ${selectedLevel}`;
-
-                if (window.logOperatorEvent) {
-                    window.logOperatorEvent('ok', `OPERATOR: STRUCTURAL BREAKDOWN SWITCHED — LEVEL ${selectedLevel}`);
-                }
-            } catch (e) {
-                console.warn('Breakdown layer update failed:', e);
-            }
-        }, 260);
+        _bdDeck = deckNumber;
+        document.querySelectorAll('.bd-deck-tab').forEach(function (tab, index) {
+            tab.classList.toggle('active', index === deckNumber - 1);
+        });
+        updateBreakdownImage();
+        if (window.logOperatorEvent) window.logOperatorEvent('ok', 'OPERATOR: STRUCTURAL BREAKDOWN — DECK ' + deckNumber);
     } catch (e) {
-        console.warn('Breakdown layer switch failed:', e);
+        console.warn('Breakdown deck switch failed:', e);
     }
+}
+
+function switchBreakdownProjection(projection) {
+    try {
+        _bdProjection = projection;
+        document.querySelectorAll('.bd-proj-tab').forEach(function (tab) {
+            tab.classList.toggle('active', tab.textContent.trim().toUpperCase() === projection.toUpperCase());
+        });
+        updateBreakdownImage();
+    } catch (e) {
+        console.warn('Breakdown projection switch failed:', e);
+    }
+}
+
+function updateBreakdownImage() {
+    var src = 'assets/' + encodeURIComponent('Level ' + _bdDeck) + '/' + _bdProjection + _bdDeck + '.png';
+    if (window._breakdownViewer) {
+        window._breakdownViewer.setImage(src);
+    } else {
+        var img = document.getElementById('active-breakdown-img');
+        var mini = document.getElementById('breakdown-minimap-img');
+        if (img)  { img.loading = 'lazy';  img.src = src; }
+        if (mini) { mini.loading = 'lazy'; mini.src = src; }
+    }
+    var label = document.getElementById('active-breakdown-label');
+    if (label) label.textContent = '// ACTIVE: DECK ' + _bdDeck + ' \u2014 ' + _bdProjection.toUpperCase() + ' PROJECTION';
 }
 // ============================================================
 // ============================================================

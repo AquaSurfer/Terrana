@@ -287,30 +287,26 @@
         <section id="blueprints" class="manual-section">
             <h2>02. MASTER DECK BLUEPRINTS</h2>
             <div class="blueprint-container">
-                <div class="legend-panel">
-                    <h3>LEGEND & KEY MATRIX</h3>
-                    <span class="interaction-prompt">// CLICK IMAGE TO ENLARGE</span>
-                    <img src="assets/Blueprints/Legend.png" alt="Legend" class="legend-img zoomable-asset" loading="lazy">
-                </div>
-                <div class="blueprint-viewer">
+                <div class="blueprint-viewer blueprint-viewer-full">
                     <div class="tab-controls">
-                        <button class="bp-tab active" onclick="switchBlueprint(1)">DECK 1</button>
-                        <button class="bp-tab" onclick="switchBlueprint(2)">DECK 2</button>
-                        <button class="bp-tab" onclick="switchBlueprint(3)">DECK 3</button>
-                        <button class="bp-tab" onclick="switchBlueprint(4)">DECK 4</button>
-                        <button class="bp-tab" onclick="switchBlueprint(5)">DECK 5</button>
+                        <button class="bp-tab active" onclick="switchBlueprint(0, 'legend')">LEGEND</button>
+                        <button class="bp-tab" onclick="switchBlueprint(1, 1)">DECK 1</button>
+                        <button class="bp-tab" onclick="switchBlueprint(2, 2)">DECK 2</button>
+                        <button class="bp-tab" onclick="switchBlueprint(3, 3)">DECK 3</button>
+                        <button class="bp-tab" onclick="switchBlueprint(4, 4)">DECK 4</button>
+                        <button class="bp-tab" onclick="switchBlueprint(5, 5)">DECK 5</button>
                     </div>
-                    <div id="active-deck-label" class="active-deck-label">// ACTIVE: DECK 1</div>
+                    <div id="active-deck-label" class="active-deck-label">// ACTIVE: LEGEND</div>
                     <div class="display-box" id="blueprint-display-box">
                         <div class="zoom-controls">
                             <button class="zoom-btn" id="zoom-in-btn" title="Zoom In">+</button>
                             <button class="zoom-btn" id="zoom-out-btn" title="Zoom Out">−</button>
                             <button class="zoom-btn" id="zoom-reset-btn" title="Reset" style="font-size:0.6rem;width:40px;">RST</button>
                         </div>
-                        <img id="active-blueprint" src="assets/Blueprints/Lvl1.png" alt="Active Blueprint View" loading="lazy">
+                        <img id="active-blueprint" src="assets/Blueprints/Legend.png" alt="Legend & Key Matrix" loading="lazy">
                         <div class="blueprint-minimap" id="blueprint-minimap">
                             <span class="minimap-label">MINIMAP</span>
-                            <img class="minimap-img" id="minimap-img" src="assets/Blueprints/Lvl1.png" alt="" loading="lazy">
+                            <img class="minimap-img" id="minimap-img" src="assets/Blueprints/Legend.png" alt="" loading="lazy">
                             <div class="minimap-viewport" id="minimap-viewport"></div>
                         </div>
                     </div>
@@ -321,22 +317,34 @@
         <section id="breakdown" class="manual-section">
             <h2>03. MULTI-LEVEL STRUCTURAL BREAKDOWN</h2>
             <div class="breakdown-container">
-                <div class="level-selector">
-                    <label for="lvl-select">SELECT STRUCTURAL LAYER:</label>
-                    <select id="lvl-select" onchange="updateBreakdownLayer()">
-                        <option value="1">Level 1</option>
-                        <option value="2">Level 2</option>
-                        <option value="3">Level 3</option>
-                        <option value="4">Level 4</option>
-                        <option value="5">Level 5</option>
-                    </select>
-                </div>
-
-                <div class="quad-grid">
-                    <div class="view-card"><span id="label-top">TOP PROJECTION — LEVEL 1</span><span class="interaction-prompt view-card-prompt">// CLICK IMAGE TO ENLARGE</span><img id="view-top" src="assets/Level 1/Top1.png" alt="Top View" class="zoomable-asset" loading="lazy"></div>
-                    <div class="view-card"><span id="label-port">PORT PROJECTION — LEVEL 1</span><span class="interaction-prompt view-card-prompt">// CLICK IMAGE TO ENLARGE</span><img id="view-port" src="assets/Level 1/Port1.png" alt="Port View" class="zoomable-asset" loading="lazy"></div>
-                    <div class="view-card"><span id="label-aft">AFT PROJECTION — LEVEL 1</span><span class="interaction-prompt view-card-prompt">// CLICK IMAGE TO ENLARGE</span><img id="view-aft" src="assets/Level 1/Aft1.png" alt="Aft View" class="zoomable-asset" loading="lazy"></div>
-                    <div class="view-card"><span id="label-fore">FORE PROJECTION — LEVEL 1</span><span class="interaction-prompt view-card-prompt">// CLICK IMAGE TO ENLARGE</span><img id="view-fore" src="assets/Level 1/Fore1.png" alt="Fore View" class="zoomable-asset" loading="lazy"></div>
+                <div class="blueprint-viewer blueprint-viewer-full">
+                    <div class="tab-controls">
+                        <button class="bd-deck-tab active" onclick="switchBreakdownDeck(1)">DECK 1</button>
+                        <button class="bd-deck-tab" onclick="switchBreakdownDeck(2)">DECK 2</button>
+                        <button class="bd-deck-tab" onclick="switchBreakdownDeck(3)">DECK 3</button>
+                        <button class="bd-deck-tab" onclick="switchBreakdownDeck(4)">DECK 4</button>
+                        <button class="bd-deck-tab" onclick="switchBreakdownDeck(5)">DECK 5</button>
+                    </div>
+                    <div class="tab-controls projection-tab-controls">
+                        <button class="bd-proj-tab active" onclick="switchBreakdownProjection('Top')">TOP</button>
+                        <button class="bd-proj-tab" onclick="switchBreakdownProjection('Port')">PORT</button>
+                        <button class="bd-proj-tab" onclick="switchBreakdownProjection('Aft')">AFT</button>
+                        <button class="bd-proj-tab" onclick="switchBreakdownProjection('Fore')">FORE</button>
+                    </div>
+                    <div id="active-breakdown-label" class="active-deck-label">// ACTIVE: DECK 1 — TOP PROJECTION</div>
+                    <div class="display-box" id="breakdown-display-box">
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" id="bd-zoom-in-btn" title="Zoom In">+</button>
+                            <button class="zoom-btn" id="bd-zoom-out-btn" title="Zoom Out">−</button>
+                            <button class="zoom-btn" id="bd-zoom-reset-btn" title="Reset" style="font-size:0.6rem;width:40px;">RST</button>
+                        </div>
+                        <img id="active-breakdown-img" src="assets/Level 1/Top1.png" alt="Deck 1 — Top Projection" loading="lazy">
+                        <div class="blueprint-minimap" id="breakdown-minimap">
+                            <span class="minimap-label">MINIMAP</span>
+                            <img class="minimap-img" id="breakdown-minimap-img" src="assets/Level 1/Top1.png" alt="" loading="lazy">
+                            <div class="minimap-viewport" id="breakdown-minimap-viewport"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -516,9 +524,16 @@
                             </div>
                         </div>
                         <div class="waveform-wrapper">
-                            <div class="waveform-label">// LIVE MUSIC WAVEFORM</div>
-                            <div class="waveform-bitrate" id="waveform-bitrate">// BITRATE: --</div>
-                            <canvas id="audio-waveform-canvas" class="waveform-canvas"></canvas>
+                            <div class="waveform-header-row">
+                                <div class="waveform-label">// LIVE MUSIC WAVEFORM</div>
+                                <div class="waveform-bitrate" id="waveform-bitrate">// BITRATE: --</div>
+                            </div>
+                            <div class="waveform-body-row">
+                                <div class="now-playing-art-box crt-effect" id="now-playing-art-box">
+                                    <img id="now-playing-art" class="now-playing-art-img" src="" alt="Now playing album art">
+                                </div>
+                                <canvas id="audio-waveform-canvas" class="waveform-canvas"></canvas>
+                            </div>
                         </div>
                         <div id="now-playing-label" class="now-playing-label">// COMMS OFFLINE</div>
                         <div class="music-controls">
