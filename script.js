@@ -24,7 +24,7 @@
 // Shown in the sidebar under the local time, and logged to
 // the browser console on load.
 // ============================================================
-const BUILD_STAMP = 'BUILD 2026-07-07.03';
+const BUILD_STAMP = 'BUILD 2026-07-07.04';
 
 document.addEventListener('DOMContentLoaded', function () {
     const stampEl = document.getElementById('build-stamp-value');
@@ -663,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let specsAnimated = false;
 
     // ============================================================
-    // OPERATOR ACTIVITY LOGGER — hooks into nav, lightbox, blueprint, breakdown
+    // OPERATOR ACTIVITY LOGGER — hooks into nav, blueprint, breakdown
     // ============================================================
     const SECTION_LOG_LABELS = {
         '#cover':       'TECHNICAL ARCHIVE — COVER PAGE',
@@ -729,7 +729,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Sequential stagger: add .stagger-child to direct staggerable children
             const staggerables = targetSection.querySelectorAll(
-                '.spec-card, .view-card, .manifest-entry, .credits-card, .maint-log-panel, .maint-status-card, .mesh-cell, .stat-slider-row, .integrity-row, .override-flag'
+                '.spec-card, .manifest-entry, .credits-card, .maint-log-panel, .maint-status-card, .mesh-cell, .stat-slider-row, .integrity-row, .override-flag'
             );
             staggerables.forEach((el, i) => {
                 el.style.opacity = '0';
@@ -777,208 +777,11 @@ document.addEventListener("DOMContentLoaded", () => {
         navigateToSection('#cover');
     }
 
-    // ============================================================
-    // LIGHTBOX OVERLAY — with zoom, pan, minimap (mirrors Section 02)
-    // ============================================================
-    const lightbox         = document.getElementById('lightbox-overlay');
-    const lightboxImg      = document.getElementById('lightbox-display');
-    const lightboxInner    = document.getElementById('lightbox-inner');
-    const lightboxMiniImg  = document.getElementById('lightbox-minimap-img');
-    const lightboxMiniVp   = document.getElementById('lightbox-minimap-vp');
-    const lightboxProjLabel= document.getElementById('lightbox-projection-label');
-    const closeBtn         = document.querySelector('.lightbox-close');
-    const lbZoomIn         = document.getElementById('lb-zoom-in');
-    const lbZoomOut        = document.getElementById('lb-zoom-out');
-    const lbZoomReset      = document.getElementById('lb-zoom-reset');
-    const zoomableAssets   = document.querySelectorAll('.zoomable-asset');
+    // (Lightbox overlay system removed — Legend and Structural Breakdown
+    // now use the contained pan-zoom viewer instead of a fullscreen
+    // lightbox, and nothing else in the site used .zoomable-asset.)
 
-    // Lightbox zoom/pan state
-    let lbScale   = 1;
-    let lbTransX  = 0;
-    let lbTransY  = 0;
-    let lbDragging= false;
-    let lbDragSX  = 0, lbDragSY  = 0;
-    let lbOriginX = 0, lbOriginY = 0;
-    const LB_MIN  = 1, LB_MAX = 8;
 
-    function applyLbTransform() {
-        if (!lightboxImg || !lightboxInner) return;
-        const boxW = lightboxInner.clientWidth;
-        const boxH = lightboxInner.clientHeight;
-        // Use displayed size (constrained by the box)
-        const natW = lightboxImg.naturalWidth  || boxW;
-        const natH = lightboxImg.naturalHeight || boxH;
-        // Fit image naturally (same as object-fit contain logic)
-        const scaleToFit = Math.min(boxW / natW, boxH / natH);
-        const dispW = natW * scaleToFit * lbScale;
-        const dispH = natH * scaleToFit * lbScale;
-        const maxX = Math.max(0, (dispW - boxW) / 2);
-        const maxY = Math.max(0, (dispH - boxH) / 2);
-        if (lbScale <= 1) { lbTransX = 0; lbTransY = 0; }
-        else {
-            lbTransX = Math.max(-maxX, Math.min(maxX, lbTransX));
-            lbTransY = Math.max(-maxY, Math.min(maxY, lbTransY));
-        }
-        lightboxImg.style.transform = `translate(calc(-50% + ${lbTransX}px), calc(-50% + ${lbTransY}px)) scale(${lbScale})`;
-        updateLbMinimap(boxW, boxH, dispW, dispH);
-    }
-
-    function updateLbMinimap(boxW, boxH, dispW, dispH) {
-        if (!lightboxMiniVp) return;
-        if (lbScale <= 1.05) {
-            lightboxMiniVp.style.cssText = 'width:100%;height:100%;left:0;top:0;';
-            return;
-        }
-        const vpW = (1 / lbScale) * 100;
-        const vpH = (1 / lbScale) * 100;
-        const offsetXFrac = 0.5 - (lbTransX / dispW);
-        const offsetYFrac = 0.5 - (lbTransY / dispH);
-        const left = Math.max(0, Math.min(100 - vpW, (offsetXFrac - vpW / 200) * 100));
-        const top  = Math.max(0, Math.min(100 - vpH, (offsetYFrac - vpH / 200) * 100));
-        lightboxMiniVp.style.width  = vpW  + '%';
-        lightboxMiniVp.style.height = vpH  + '%';
-        lightboxMiniVp.style.left   = left + '%';
-        lightboxMiniVp.style.top    = top  + '%';
-    }
-
-    function resetLbView() { lbScale = 1; lbTransX = 0; lbTransY = 0; applyLbTransform(); }
-
-    function openLightbox(src, alt, labelText) {
-        try {
-            if (!lightbox || !lightboxImg || !src) return;
-            playSystemPulse(150, 0.08, 'triangle');
-            lightboxImg.src = src;
-            lightboxImg.alt = alt || 'Enlarged Projection Matrix';
-            if (lightboxMiniImg) lightboxMiniImg.src = src;
-            if (lightboxProjLabel) lightboxProjLabel.textContent = labelText || '';
-            resetLbView();
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            lightboxImg.onload = () => applyLbTransform();
-
-            if (labelText) {
-                window.logOperatorEvent('ok', `OPERATOR: OPENED PROJECTION VIEW — ${labelText}`);
-            }
-        } catch (e) {
-            console.warn('Lightbox open failed:', e);
-        }
-    }
-
-    // Bind zoomable assets
-    zoomableAssets.forEach(asset => {
-        asset.addEventListener('click', function () {
-            if (this.classList.contains('telemetry-lost')) return; // nothing to zoom into
-            // Try to get projection label from parent view-card's first span
-            const card = this.closest('.view-card');
-            const label = card ? card.querySelector('span:first-child')?.textContent : '';
-            openLightbox(this.src, this.alt, label);
-        });
-    });
-
-    function closeLightbox() {
-        playSystemPulse(90, 0.06, 'sine');
-        cleanupLbDragListeners();
-        if (lightbox) lightbox.classList.remove('active');
-        document.body.style.overflow = '';
-        resetLbView();
-    }
-
-    // Lightbox drag listeners — attached only while dragging, removed on release/close
-    function onLbMouseMove(e) {
-        if (!lbDragging) return;
-        lbTransX = lbOriginX + (e.clientX - lbDragSX);
-        lbTransY = lbOriginY + (e.clientY - lbDragSY);
-        applyLbTransform();
-    }
-
-    function onLbMouseUp() {
-        if (!lbDragging) return;
-        lbDragging = false;
-        if (lightboxInner) lightboxInner.classList.remove('grabbing');
-        cleanupLbDragListeners();
-    }
-
-    function bindLbDragListeners() {
-        document.addEventListener('mousemove', onLbMouseMove);
-        document.addEventListener('mouseup', onLbMouseUp);
-    }
-
-    function cleanupLbDragListeners() {
-        lbDragging = false;
-        if (lightboxInner) lightboxInner.classList.remove('grabbing');
-        document.removeEventListener('mousemove', onLbMouseMove);
-        document.removeEventListener('mouseup', onLbMouseUp);
-    }
-
-    if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
-    if (lightbox) {
-        lightbox.addEventListener('click', function (e) {
-            if (e.target === lightbox) closeLightbox();
-        });
-    }
-
-    document.addEventListener('keydown', function onLbKeyDown(e) {
-        if (!lightbox || !lightbox.classList.contains('active')) return;
-        if (e.key === 'Escape') closeLightbox();
-        if (e.key === '+' || e.key === '=') { lbScale = Math.min(LB_MAX, lbScale * 1.35); applyLbTransform(); }
-        if (e.key === '-') { lbScale = Math.max(LB_MIN, lbScale / 1.35); applyLbTransform(); }
-    });
-
-    // Zoom buttons
-    if (lbZoomIn)    lbZoomIn.addEventListener('click',    (e) => { e.stopPropagation(); lbScale = Math.min(LB_MAX, lbScale * 1.35); applyLbTransform(); playSystemPulse(160, 0.03, 'sine'); });
-    if (lbZoomOut)   lbZoomOut.addEventListener('click',   (e) => { e.stopPropagation(); lbScale = Math.max(LB_MIN, lbScale / 1.35); applyLbTransform(); playSystemPulse(120, 0.03, 'sine'); });
-    if (lbZoomReset) lbZoomReset.addEventListener('click', (e) => { e.stopPropagation(); resetLbView(); playSystemPulse(100, 0.04, 'sine'); });
-
-    // Mouse wheel zoom on lightbox inner
-    if (lightboxInner) {
-        lightboxInner.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const factor = e.deltaY < 0 ? 1.15 : 0.87;
-            lbScale = Math.max(LB_MIN, Math.min(LB_MAX, lbScale * factor));
-            applyLbTransform();
-        }, { passive: false });
-
-        lightboxInner.addEventListener('mousedown', (e) => {
-            if (lbScale <= 1) return;
-            lbDragging = true;
-            lbDragSX = e.clientX; lbDragSY = e.clientY;
-            lbOriginX = lbTransX; lbOriginY = lbTransY;
-            lightboxInner.classList.add('grabbing');
-            bindLbDragListeners();
-        });
-
-        // Touch support
-        let lbLastDist = null;
-        lightboxInner.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                lbLastDist = Math.hypot(dx, dy);
-            } else if (e.touches.length === 1 && lbScale > 1) {
-                lbDragging = true;
-                lbDragSX = e.touches[0].clientX; lbDragSY = e.touches[0].clientY;
-                lbOriginX = lbTransX; lbOriginY = lbTransY;
-            }
-        }, { passive: true });
-
-        lightboxInner.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const dist = Math.hypot(dx, dy);
-                if (lbLastDist) { lbScale = Math.max(LB_MIN, Math.min(LB_MAX, lbScale * (dist / lbLastDist))); applyLbTransform(); }
-                lbLastDist = dist;
-            } else if (lbDragging && e.touches.length === 1) {
-                lbTransX = lbOriginX + (e.touches[0].clientX - lbDragSX);
-                lbTransY = lbOriginY + (e.touches[0].clientY - lbDragSY);
-                applyLbTransform();
-            }
-        }, { passive: true });
-
-        lightboxInner.addEventListener('touchend', () => { lbLastDist = null; lbDragging = false; });
-    }
-
-    // Mechanical tone on outbound creation links
     const outboundLinks = document.querySelectorAll('.telemetry-link, .telemetry-link-compact, .terminal-notes-link');
     outboundLinks.forEach(link => {
         link.addEventListener('click', () => {

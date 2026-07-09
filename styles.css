@@ -33,9 +33,7 @@
     --text-secondary: #8494a7;
     --ui-panel-border: rgba(255, 255, 255, 0.45);
     --bar-color-empty: #10151f;
-    --border-glow: rgba(0, 245, 212, 0.2);
     --lore-green: #39ff6a;
-    --lore-green-dim: rgba(57, 255, 106, 0.35);
 }
 
 body {
@@ -249,26 +247,6 @@ body {
     color: var(--bg-dark);
 }
 
-/* Telemetry scrolling ticker */
-.telemetry-ticker {
-    width: 100%;
-    overflow: hidden;
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-    padding: 8px 0;
-    white-space: nowrap;
-    color: var(--accent-cyan);
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-    opacity: 0.8;
-}
-
-.telemetry-ticker span {
-    display: inline-block;
-    padding-left: 100%;
-    animation: tickerScroll 24s linear infinite;
-}
-
 /* Sidebar footer — audio button */
 .sidebar-footer {
     margin-top: -10px;
@@ -413,22 +391,6 @@ body {
     object-fit: contain;
     filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.9));
     display: block;
-}
-
-/* Thruster glow — calibrated to mid-rear thruster manifold housing */
-.thruster-glow-matrix {
-    position: absolute;
-    width: 45px;
-    height: 45px;
-    bottom: 36%;
-    left: 48%;
-    transform: translate(-50%, 50%);
-    background: radial-gradient(circle, rgba(0, 245, 212, 0.95) 0%, rgba(0, 180, 216, 0.5) 45%, transparent 70%);
-    mix-blend-mode: screen;
-    pointer-events: none;
-    z-index: 6;
-    filter: blur(2px);
-    animation: plasmaThrusterPulse 0.18s linear infinite alternate;
 }
 
 .cover-title {
@@ -957,9 +919,7 @@ body {
 }
 
 .spec-card,
-.credits-card,
-.view-card,
-.spec-card-full-width {
+.credits-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     padding: 30px;
@@ -967,8 +927,7 @@ body {
 }
 
 .spec-card h3,
-.credits-card h3,
-.spec-card-full-width h3 {
+.credits-card h3 {
     color: var(--accent-amber);
     margin-bottom: 20px;
     font-size: 1.2rem;
@@ -976,8 +935,7 @@ body {
     padding-bottom: 8px;
 }
 
-.spec-card p,
-.spec-card-full-width p {
+.spec-card p {
     margin-bottom: 12px;
     font-size: 0.95rem;
     line-height: 1.4;
@@ -1316,159 +1274,8 @@ a:hover .ext-link-icon {
 /* ============================================================
    LIGHTBOX / ZOOM
    ============================================================ */
-.zoomable-asset {
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.zoomable-asset:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 15px rgba(0, 245, 212, 0.3);
-}
-
-.view-card-prompt {
-    font-size: 0.68rem;
-    margin-top: -8px;
-    margin-bottom: -4px;
-    opacity: 0.7;
-    border-left: none !important;
-    padding-left: 0 !important;
-    letter-spacing: 1px;
-}
-
-.lightbox-overlay {
-    display: none;
-    position: fixed;
-    z-index: 500;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(4, 6, 10, 0.97);
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    gap: 0;
-}
-
-.lightbox-overlay.active {
-    display: flex;
-    opacity: 1;
-}
-
-/* Inner container — holds image + minimap, acts as pan/zoom viewport */
-.lightbox-inner {
-    position: relative;
-    width: 90vw;
-    height: 82vh;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    background: #06080c;
-    cursor: grab;
-    user-select: none;
-    flex-shrink: 0;
-}
-
-.lightbox-inner.grabbing {
-    cursor: grabbing;
-}
-
-.lightbox-display {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    transform-origin: center center;
-    max-width: none;
-    max-height: none;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    pointer-events: none;
-    transition: none;
-}
-
-/* Minimap inside lightbox */
-.lightbox-minimap {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    width: 120px;
-    height: 90px;
-    border: 1px solid var(--accent-cyan);
-    background: rgba(6, 8, 12, 0.9);
-    overflow: hidden;
-    z-index: 10;
-    pointer-events: none;
-    opacity: 0.85;
-}
-
-.lightbox-minimap .minimap-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    opacity: 0.7;
-}
-
-.lightbox-minimap .minimap-viewport {
-    position: absolute;
-    border: 1px solid var(--accent-cyan);
-    background: rgba(0, 245, 212, 0.12);
-    box-shadow: 0 0 4px rgba(0, 245, 212, 0.4);
-    transition: all 0.05s linear;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-}
-
-/* Zoom controls row below image */
-.lightbox-zoom-controls {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    flex-shrink: 0;
-}
-
-/* Projection label top-left */
-.lightbox-projection-label {
-    position: absolute;
-    top: 24px;
-    left: 40px;
-    font-size: 0.72rem;
-    color: var(--accent-cyan);
-    letter-spacing: 2px;
-    font-weight: bold;
-    opacity: 0.85;
-    pointer-events: none;
-}
-
-/* Hint bar */
-.lightbox-hint {
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    letter-spacing: 2px;
-    margin-top: 8px;
-    opacity: 0.7;
-    flex-shrink: 0;
-}
-
-.lightbox-close {
-    position: absolute;
-    top: 18px;
-    right: 34px;
-    color: var(--text-primary);
-    font-size: 36px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    z-index: 20;
-    line-height: 1;
-}
-
-.lightbox-close:hover {
-    color: var(--accent-cyan);
-}
+/* (Lightbox overlay CSS removed — no longer used; Legend and
+   Structural Breakdown use the contained pan-zoom viewer instead.) */
 
 /* ============================================================
    GLITCH ANIMATIONS
@@ -1520,11 +1327,6 @@ a:hover .ext-link-icon {
     93%, 98%      { text-shadow: 0 0 8px rgba(255, 159, 28, 0.6); }
 }
 
-@keyframes plasmaThrusterPulse {
-    0%   { transform: translate(-50%, 50%) scale(0.92); opacity: 0.75; filter: blur(2px); }
-    100% { transform: translate(-50%, 50%) scale(1.08); opacity: 0.98; filter: blur(3px); }
-}
-
 @keyframes glitchTrigger-1 {
     0%       { clip: rect(20px,  9999px, 66px,  0); }
     5%       { clip: rect(80px,  9999px, 5px,   0); }
@@ -1561,11 +1363,6 @@ a:hover .ext-link-icon {
 }
 
 /* Ticker scroll */
-@keyframes tickerScroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-100%); }
-}
-
 /* Logo coin spin — fixed (was previously orphaned/broken) */
 @keyframes coinSpin {
     0%   { transform: rotateY(0deg); }
@@ -2271,13 +2068,6 @@ a:hover .ext-link-icon {
     color: var(--bg-dark);
 }
 
-.track-picker-wrapper {
-    margin-top: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
 .track-list {
     display: flex;
     flex-direction: column;
@@ -2609,10 +2399,6 @@ a:hover .ext-link-icon {
    ============================================================ */
 .telemetry-lost {
     cursor: default !important;
-}
-.telemetry-lost.zoomable-asset:hover {
-    transform: none !important;
-    box-shadow: none !important;
 }
 
 /* ============================================================
