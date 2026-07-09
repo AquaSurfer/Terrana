@@ -50,7 +50,7 @@ If you are one of the 300+ people who have cloned this project, I want to hear f
 Join the Discussions to share your feedback, report terminal quirks, or ask technical questions.
 
 Support Development
-If you find Terrana useful, or enjoy the lore and technical implementation, please consider supporting its development:
+If you enjoy the immersion and the technical work behind the terminal, consider supporting the project's growth:
 
 GitHub Sponsors
 
