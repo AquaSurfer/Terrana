@@ -51,4 +51,4 @@ Markdown
 
 **Join the Conversation**
 If you are one of the 300+ people who have cloned this project, I want to hear from you. Your interest drives the next build. 
-* Join the [Discussions](https://github.com/YOUR_USERNAME/YOUR_REPO/discussions) to share your feedback or ask technical questions.
+* Join the [Discussions](https://github.com/AquaSurfer/Terrana/discussions) to share your feedback or ask technical questions.
