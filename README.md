@@ -36,10 +36,19 @@ Cloning this repository, swapping out the images or branding, and re-uploading i
 
 If you'd like to use any part of this project — code, art, or audio — for your own work, reach out first. Attribution and permission requests are welcome; unauthorized copies are not.
 
-## Support the Project
+## Support the Project Development
 
 If you find Terrana useful, or enjoy the lore and technical implementation, please consider supporting its development. Maintaining this repository and keeping the project infrastructure running takes time and resources — your support helps keep this project independent and ad-free.
 
 You can contribute via [GitHub Sponsors](https://github.com/sponsors/AquaSurfer) or [Buy Me a Coffee](https://buymeacoffee.com/aquasurf).
 
-Thank you to everyone who has explored the codebase — your interest is the foundation of this project.
+*Your support ensures this project remains an independent, private creative venture.*
+
+Markdown
+## 🛠 Support & Community
+
+*Terrana* is an independent, ad-free creative project. Maintaining the infrastructure, refining the UI, and developing new lore logs requires dedicated resources. 
+
+**Join the Conversation**
+If you are one of the 300+ people who have cloned this project, I want to hear from you. Your interest drives the next build. 
+* Join the [Discussions](https://github.com/YOUR_USERNAME/YOUR_REPO/discussions) to share your feedback or ask technical questions.
