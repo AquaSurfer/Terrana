@@ -24,7 +24,7 @@
 // Shown in the sidebar under the local time, and logged to
 // the browser console on load.
 // ============================================================
-const BUILD_STAMP = 'BUILD 2026-07-07.04';
+const BUILD_STAMP = 'BUILD 2026-07-07.05';
 
 document.addEventListener('DOMContentLoaded', function () {
     const stampEl = document.getElementById('build-stamp-value');
@@ -1211,36 +1211,52 @@ document.addEventListener('DOMContentLoaded', function () {
         '</svg>'
     );
 
-    // Reads embedded ID3 album art from an MP3 (via the jsmediatags CDN
-    // library) and swaps it into the given <img>. Silently leaves the
-    // default note icon in place if the library isn't available, the
-    // file has no embedded art, or the read fails for any reason.
+    // Reads embedded ID3 album art from an MP3 (via the self-hosted
+    // jsmediatags library) and swaps it into the given <img>. Silently
+    // leaves the default note icon in place if the library isn't
+    // available, the file has no embedded art, or the read fails.
+    //
+    // IMPORTANT: we fetch the file ourselves and hand jsmediatags a
+    // Blob, rather than letting it fetch the URL itself. jsmediatags'
+    // own URL reader uses incremental HTTP Range requests to read the
+    // file in chunks, which is a common source of silent failures in
+    // real browsers (unlike Node, which reads straight off disk and
+    // has no such issue — which is why our earlier local test looked
+    // fine but the live site didn't). Fetching the whole file first and
+    // parsing it entirely in memory sidesteps that path completely.
     function loadAlbumArt(file, imgEl) {
         if (!imgEl) return;
         if (!window.jsmediatags) {
             console.warn('[album-art] jsmediatags did not load — check that assets/js/jsmediatags.min.js exists and loaded without a 404 (see Network tab).');
             return;
         }
-        try {
-            window.jsmediatags.read('assets/mp3/' + file, {
-                onSuccess: function (tag) {
-                    var pic = tag && tag.tags && tag.tags.picture;
-                    if (!pic || !pic.data) {
-                        console.warn('[album-art] ' + file + ' — read succeeded but no embedded picture tag found.');
-                        return;
+        var url = 'assets/mp3/' + file;
+        fetch(url)
+            .then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.blob();
+            })
+            .then(function (blob) {
+                new window.jsmediatags.Reader(blob).setTagsToRead(['picture']).read({
+                    onSuccess: function (tag) {
+                        var pic = tag && tag.tags && tag.tags.picture;
+                        if (!pic || !pic.data) {
+                            console.warn('[album-art] ' + file + ' — read succeeded but no embedded picture tag found.');
+                            return;
+                        }
+                        var chunks = [];
+                        for (var i = 0; i < pic.data.length; i++) chunks.push(String.fromCharCode(pic.data[i]));
+                        imgEl.src = 'data:' + pic.format + ';base64,' + window.btoa(chunks.join(''));
+                        imgEl.classList.add('has-art');
+                    },
+                    onError: function (error) {
+                        console.warn('[album-art] ' + file + ' — jsmediatags onError:', error);
                     }
-                    var chunks = [];
-                    for (var i = 0; i < pic.data.length; i++) chunks.push(String.fromCharCode(pic.data[i]));
-                    imgEl.src = 'data:' + pic.format + ';base64,' + window.btoa(chunks.join(''));
-                    imgEl.classList.add('has-art');
-                },
-                onError: function (error) {
-                    console.warn('[album-art] ' + file + ' — jsmediatags onError:', error);
-                }
+                });
+            })
+            .catch(function (e) {
+                console.warn('[album-art] ' + file + ' — fetch/blob failed:', e.message);
             });
-        } catch (e) {
-            console.warn('[album-art] ' + file + ' — exception calling jsmediatags:', e.message);
-        }
     }
 
     // Reads the TRUE encoded bitrate directly from the MP3's own frame
@@ -1314,7 +1330,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Load a track by index and optionally start playing
     function loadTrack(index, andPlay) {
-        if (TRACKS[index].locked && !loreUnlocked) return; // gated until password solved
+        if (TRACKS[index].locked && !loreUnlocked) return; // gated until all 4 lore logs are read
         currentTrack = index;
         audio.src    = 'assets/mp3/' + TRACKS[index].file;
         audio.loop   = false; // every track cycles to the next via the 'ended' handler below
@@ -1375,7 +1391,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!trackList) return;
         trackList.innerHTML = '';
         TRACKS.forEach(function(track, i) {
-            if (track.locked && !loreUnlocked) return; // hidden until password solved
+            if (track.locked && !loreUnlocked) return; // hidden until all 4 lore logs are read
             var btn2 = document.createElement('button');
             btn2.className = 'track-btn';
             btn2.id        = 'track-btn-' + i;
@@ -1414,8 +1430,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return from;
     }
 
-    // Called by the lore terminal once "ANGELSTARR" has been entered
-    // correctly (or restored from a previous unlock this session) —
+    // Called by the lore terminal once all 4 lore logs have actually
+    // been read (or restored from a previous completed session) —
     // reveals the track in the selector. Pass autoplay=false to just
     // reveal it without starting playback (used on session restore,
     // since browsers block audio autoplay without a user gesture).
@@ -1728,13 +1744,15 @@ document.addEventListener('DOMContentLoaded', function () {
         buildLogButtons();
         // If every log was already decrypted in a previous visit this
         // session, show the final signal immediately rather than making
-        // the user click through all four again just to see it.
+        // the user click through all four again just to see it — and
+        // only NOW reveal the AngelStarr track, since it stays gated
+        // behind full log completion, not just the password.
         if (Object.keys(visitedLogs).length >= LOGS.length) {
             appendLine('[SYSTEM_SIGNAL: L-RA_LOOP_EXTENDED]', 'lore-line-signal');
+            // Reveal the track in the selector but don't force playback —
+            // browsers block audio autoplay without a fresh user gesture.
+            if (window.unlockAngelStarrTrack) window.unlockAngelStarrTrack(false);
         }
-        // Reveal the track in the selector but don't force playback —
-        // browsers block audio autoplay without a fresh user gesture.
-        if (window.unlockAngelStarrTrack) window.unlockAngelStarrTrack(false);
     } else {
         renderStandby();
     }
@@ -1803,12 +1821,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // "Immediate screen refresh" — brief flash, then the screen
         // clears and rebuilds into the unlocked lore-archive view.
+        // Note: solving the password unlocks the LOG NODES, not the
+        // AngelStarr track — that stays gated until all 4 logs are
+        // actually read (see checkAllVisited below).
         setTimeout(function () {
             crtScreen.classList.remove('lore-flash');
             unlocked  = true;
             streaming = false;
             sessionStorage.setItem(LORE_SESSION_KEY, '1');
-            if (window.unlockAngelStarrTrack) window.unlockAngelStarrTrack();
             showLogInterface();
         }, 700);
     }
@@ -1891,6 +1911,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 crtScreen.classList.remove('lore-red-pulse');
                 appendLine('[SYSTEM_SIGNAL: L-RA_LOOP_EXTENDED]', 'lore-line-signal');
                 if (window.logOperatorEvent) window.logOperatorEvent('warn', 'SYSTEM_SIGNAL: L-RA_LOOP_EXTENDED');
+                // The real unlock moment — AngelStarr was gated on the
+                // password before, but now only reveals/plays once every
+                // log has actually been read, not just decrypted access.
+                if (window.unlockAngelStarrTrack) window.unlockAngelStarrTrack();
             }, 900);
         }, 400);
     }
